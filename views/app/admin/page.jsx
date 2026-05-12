@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import axios from 'axios';
 
 const ADMIN_EMAIL = 'yusufkhambaty1@gmail.com';
@@ -54,6 +55,7 @@ function SmallStat({ label, value }) {
 const MODE_LABELS = { hint: 'Hint', logic: 'Logic', humanize: 'Humanize', debug: 'Debug', optimize: 'Optimize' };
 
 export default function AdminPage() {
+  const { data: session, status } = useSession();
   const [authed, setAuthed] = useState(false);
   const [token, setToken] = useState('');
   const [email, setEmail] = useState('');
@@ -65,6 +67,11 @@ export default function AdminPage() {
   const [lastRefresh, setLastRefresh] = useState(null);
 
   useEffect(() => {
+    if (status === 'authenticated' && session?.user?.isAdmin && session?.user?.adminToken) {
+      setToken(session.user.adminToken);
+      setAuthed(true);
+      return;
+    }
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
@@ -72,7 +79,7 @@ export default function AdminPage() {
         if (t) { setToken(t); setAuthed(true); }
       } catch (_) { localStorage.removeItem(STORAGE_KEY); }
     }
-  }, []);
+  }, [status, session]);
 
   const fetchData = useCallback(async (t) => {
     try {
@@ -135,6 +142,14 @@ export default function AdminPage() {
     fontSize: 14, outline: 'none', boxSizing: 'border-box',
   };
 
+  if (status === 'loading') {
+    return (
+      <div style={{ minHeight: '100vh', background: '#030712', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontFamily: 'system-ui, sans-serif', fontSize: 14 }}>
+        Loading...
+      </div>
+    );
+  }
+
   if (!authed) {
     return (
       <div style={{ minHeight: '100vh', background: '#030712', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui, sans-serif' }}>
@@ -181,9 +196,14 @@ export default function AdminPage() {
             </p>
           )}
         </div>
-        <button onClick={handleSignOut} style={{ background: 'transparent', border: '1px solid #1f2937', borderRadius: 8, padding: '8px 16px', color: '#9ca3af', fontSize: 13, cursor: 'pointer' }}>
-          Sign Out
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <a href="/compiler" style={{ background: '#2563eb', border: 'none', borderRadius: 8, padding: '8px 16px', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+            Open Compiler
+          </a>
+          <button onClick={handleSignOut} style={{ background: 'transparent', border: '1px solid #1f2937', borderRadius: 8, padding: '8px 16px', color: '#9ca3af', fontSize: 13, cursor: 'pointer' }}>
+            Sign Out
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>

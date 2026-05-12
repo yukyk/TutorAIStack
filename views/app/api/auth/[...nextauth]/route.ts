@@ -25,6 +25,13 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        if (
+          credentials.email === process.env.ADMIN_EMAIL &&
+          credentials.password === process.env.ADMIN_PASSWORD
+        ) {
+          return { id: 'admin', email: credentials.email, name: 'Admin', isAdmin: true } as any;
+        }
+
         const conn = await mysql.createConnection({
           host: process.env.DB_HOST || 'localhost',
           user: process.env.DB_USER || 'root',
@@ -47,6 +54,22 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if ((user as any)?.isAdmin) {
+        token.isAdmin = true;
+        token.adminToken = process.env.ADMIN_PASSWORD;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token.isAdmin) {
+        (session.user as any).isAdmin = true;
+        (session.user as any).adminToken = token.adminToken;
+      }
+      return session;
+    },
   },
   pages: {
     signIn: '/login',

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn, useSession, getSession } from 'next-auth/react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,8 +13,10 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (status === 'authenticated') router.replace('/compiler');
-  }, [status, router]);
+    if (status === 'authenticated') {
+      router.replace(session?.user?.isAdmin ? '/admin' : '/compiler');
+    }
+  }, [status, session, router]);
 
   function change(e) {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -43,7 +45,8 @@ export default function LoginPage() {
       return;
     }
 
-    router.push('/compiler');
+    const updated = await getSession();
+    router.push(updated?.user?.isAdmin ? '/admin' : '/compiler');
   }
 
   if (status === 'loading') return null;

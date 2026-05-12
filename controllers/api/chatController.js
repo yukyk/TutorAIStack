@@ -9,6 +9,9 @@ console.log('Groq Key loaded:', process.env.GROQ_API_KEY ? 'YES' : 'NO');
 const requestCounts = {};
 
 const rateLimit = (req, res, next) => {
+    const adminToken = req.headers['x-admin-token'];
+    if (adminToken && adminToken === process.env.ADMIN_PASSWORD) return next();
+
     const ip = req.ip;
     const now = Date.now();
 

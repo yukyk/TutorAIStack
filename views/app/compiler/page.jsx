@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
 
@@ -322,6 +323,10 @@ Pick a mode above and ask me anything about this problem.`;
 }
 
 export default function CompilerPage() {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.isAdmin;
+  const adminToken = session?.user?.adminToken;
+
   // --- existing state (unchanged) ---
   const [problemId, setProblemId] = useState('two_sum');
   const [language, setLanguage] = useState(LANGUAGES[0]);
@@ -415,22 +420,25 @@ export default function CompilerPage() {
     const userMsg = aiMessage;
     const currentHistory = aiHistory;
 
-    const newCount = messageCount + 1;
-    setMessageCount(newCount);
-    if (newCount >= MAX_FREE_MESSAGES) setIsLimitReached(true);
+    if (!isAdmin) {
+      const newCount = messageCount + 1;
+      setMessageCount(newCount);
+      if (newCount >= MAX_FREE_MESSAGES) setIsLimitReached(true);
+    }
 
     setAiMessage('');
     setAiLoading(true);
     setAiHistory(prev => [...prev, { role: 'user', content: userMsg }]);
 
     try {
+      const headers = isAdmin && adminToken ? { 'x-admin-token': adminToken } : {};
       const res = await axios.post('/api/chat', {
         message: userMsg,
         mode: aiMode,
         problemId: problemId,
         history: currentHistory,
         userCode: code,
-      });
+      }, { headers });
 
       const fullText = res.data.reply;
       setAiLoading(false);
