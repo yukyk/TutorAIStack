@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\\\Users\\\\Yusuf\\\\Documents\" /b)",
+      "Bash(dir \"C:\\\\Users\\\\Yusuf\\\\Desktop\" /b)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -X POST http://localhost:4000/api/execute -H \"Content-Type: application/json\" -d \"{\\\\\"code\\\\\":\\\\\"def twoSum\\(nums, target\\):\\\\\\\\n    seen = {}\\\\\\\\n    for i, n in enumerate\\(nums\\):\\\\\\\\n        if target - n in seen:\\\\\\\\n            return [seen[target-n], i]\\\\\\\\n        seen[n] = i\\\\\",\\\\\"language\\\\\":\\\\\"python\\\\\",\\\\\"problemId\\\\\":\\\\\"two_sum\\\\\"}\")",
+      "Bash(curl -s -X POST https://emkc.org/api/v2/piston/execute -H \"Content-Type: application/json\" -d \"{\\\\\"language\\\\\":\\\\\"python\\\\\",\\\\\"version\\\\\":\\\\\"*\\\\\",\\\\\"files\\\\\":[{\\\\\"content\\\\\":\\\\\"print\\(42\\)\\\\\"}]}\")",
+      "Bash(curl -s -X POST https://judge0-ce.p.rapidapi.com/submissions -H \"Content-Type: application/json\" -d \"{\\\\\"source_code\\\\\":\\\\\"print\\(42\\)\\\\\",\\\\\"language_id\\\\\":71}\")",
+      "Bash(curl -s \"https://ce.judge0.com/about\")",
+      "Bash(curl *)",
+      "Bash(node *)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(taskkill /PID 22500 /F)",
+      "PowerShell(Stop-Process *)",
+      "Bash(findstr /v \"KEY\\\\|PASSWORD\\\\|SECRET\\\\|PASS\")"
+    ]
+  }
+}

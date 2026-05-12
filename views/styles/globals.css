@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0B0F19;
+  --color-foreground: #FFFFFF;
+  --color-primary-blue: #1E3A8A;
+  --color-electric-blue: #3B82F6;
+  
+  --font-sans: var(--font-inter);
+}
+
+:root {
+  --background: #0B0F19;
+  --foreground: #FFFFFF;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* Glassmorphism utilities */
+@utility glass {
+  background: rgba(11, 15, 25, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@utility glass-card {
+  background: linear-gradient(145deg, rgba(30, 58, 138, 0.1), rgba(11, 15, 25, 0.4));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom glow */
+@utility glow {
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0.35);
+}
+
+@utility glow-text {
+  text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; box-shadow: 0 0 40px rgba(59, 130, 246, 0.2); }
+  50% { opacity: 0.8; box-shadow: 0 0 60px rgba(59, 130, 246, 0.4); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}

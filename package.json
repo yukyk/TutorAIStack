@@ -1,0 +1,37 @@
+{
+  "name": "ai-tutor-landing",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js",
+    "build": "next build ./views",
+    "start": "NODE_ENV=production node server.js",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "axios": "^1.16.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "groq-sdk": "^1.1.2",
+    "lucide-react": "^1.14.0",
+    "mysql2": "^3.10.0",
+    "next": "16.2.4",
+    "next-auth": "^4.24.14",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

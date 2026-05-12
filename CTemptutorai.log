@@ -1,0 +1,13 @@
+
+> ai-tutor-landing@0.1.0 dev
+> node server.js
+
+Groq Key loaded: YES
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          22500
+- Dir:          C:\Users\Yusuf\Desktop\Leetcode Learner\views
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 22500 /F to stop it.
