@@ -1,3 +1,6 @@
+// LOCAL DEVELOPMENT ONLY — this file is not used in production.
+// For Vercel deployment, set Root Directory to "views/" and deploy the Next.js app directly.
+// All API routes live in views/app/api/ and are handled by Next.js natively.
 require('dotenv').config();
 
 const express = require('express');
