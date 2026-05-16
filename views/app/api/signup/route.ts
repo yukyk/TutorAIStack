@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import supabase from '@/lib/db';
 
+function stripHtml(str: string): string {
+  return str.replace(/<[^>]*>/g, '');
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   let body: { name?: string; email?: string; password?: string };
   try {
@@ -12,7 +16,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const { name, email, password } = body;
 
-  if (!name || !email || !password) {
+  const cleanName = name ? stripHtml(name).trim() : undefined;
+  const cleanEmail = email ? stripHtml(email).trim() : undefined;
+
+  if (!cleanName || !cleanEmail || !password) {
     return NextResponse.json({ error: 'Name, email, and password are required' }, { status: 400 });
   }
 
@@ -24,7 +31,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { data: existing } = await supabase
       .from('users')
       .select('id')
-      .eq('email', email)
+      .eq('email', cleanEmail)
       .single();
 
     if (existing) {
@@ -34,7 +41,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const hash = await bcrypt.hash(password, 12);
     const { error } = await supabase
       .from('users')
-      .insert({ name, email, password_hash: hash });
+      .insert({ name: cleanName, email: cleanEmail, password_hash: hash });
 
     if (error) {
       console.error('Signup error:', error);

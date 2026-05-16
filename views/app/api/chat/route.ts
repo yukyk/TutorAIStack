@@ -159,6 +159,10 @@ function isMessageOffTopic(message: string, problem: Problem): boolean {
   return !problem.topics.some(topic => msg.includes(topic));
 }
 
+function stripHtml(str: string): string {
+  return str.replace(/<[^>]*>/g, '');
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   console.log('GROQ key present:', !!process.env.GROQ_API_KEY);
   const adminToken = request.headers.get('x-admin-token');
@@ -185,15 +189,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     userCode?: string;
   };
   try {
-    body = await request.json();
+    const rawText = await request.text();
+    if (rawText.length > 51200) {
+      return NextResponse.json({ error: 'Request body too large.' }, { status: 413 });
+    }
+    body = JSON.parse(rawText);
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
   const { message, mode, problemId, history, userCode } = body;
 
-  if (!message || !mode || !problemId) {
+  const cleanMessage = message ? stripHtml(message).trim() : undefined;
+  const cleanCode = userCode ? stripHtml(userCode).trim() : undefined;
+
+  if (!cleanMessage || !mode || !problemId) {
     return NextResponse.json({ error: 'message, mode, and problemId are required' }, { status: 400 });
+  }
+  if (cleanMessage.length > 2000) {
+    return NextResponse.json({ error: 'Message exceeds 2000 character limit.' }, { status: 400 });
+  }
+  if (cleanCode && cleanCode.length > 10000) {
+    return NextResponse.json({ error: 'Code exceeds 10000 character limit.' }, { status: 400 });
   }
 
   if (!MODE_PROMPTS[mode]) {
@@ -208,7 +225,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
   }
 
-  if (isMessageOffTopic(message, problem)) {
+  if (isMessageOffTopic(cleanMessage, problem)) {
     return NextResponse.json({
       reply: `I can only help with questions about this problem. What part of "${problem.title}" are you stuck on?`,
       mode,
@@ -226,7 +243,7 @@ Title: ${problem.title}
 Description: ${problem.description}
 Example: ${problem.example}
 Constraints: ${problem.constraints}
-${userCode ? `\nUSER'S CURRENT CODE:\n\`\`\`\n${userCode}\n\`\`\`` : '\nNo code submitted yet.'}
+${cleanCode ? `\nUSER'S CURRENT CODE:\n\`\`\`\n${cleanCode}\n\`\`\`` : '\nNo code submitted yet.'}
 
 ${'─'.repeat(60)}
 
@@ -239,7 +256,7 @@ ${MODE_PROMPTS[mode]}
       role: msg.role as 'user' | 'assistant',
       content: msg.content,
     })),
-    { role: 'user' as const, content: message },
+    { role: 'user' as const, content: cleanMessage },
   ];
 
   try {
