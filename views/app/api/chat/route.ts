@@ -121,25 +121,41 @@ characters within a string.`,
 function isMessageOffTopic(message: string, problem: Problem): boolean {
   const msg = message.toLowerCase().trim();
 
+  // Short messages are almost always DSA follow-ups
+  if (msg.split(/\s+/).length <= 10) return false;
+
+  // Conversational continuers signal an ongoing DSA discussion
+  const conversationWords = [
+    'okay', 'ohh', 'oh ', 'ah ', 'yeah', 'yep', 'hmm', 'wait',
+    'right', 'so ', 'i think', 'i need', 'i want', 'i should',
+    'that means', 'what if', 'basically', 'actually',
+  ];
+  if (conversationWords.some(word => msg.includes(word))) return false;
+
+  // Any programming/DSA-adjacent word → allow
   const alwaysAllow = [
     'hint', 'help', 'stuck', 'confused', 'explain', 'understand',
     'why', 'how', 'what', 'approach', 'solution', 'code', 'error',
     'debug', 'wrong', 'optimize', 'complexity', 'time', 'space',
+    'move', 'shift', 'ahead', 'behind', 'value', 'variable',
+    'index', 'array', 'loop', 'check', 'need', 'nums', 'target',
+    'result', 'return', 'function', 'method', 'work', 'fix',
+    'change', 'update', 'try', 'use', 'get', 'put', 'set',
+    'add', 'remove', 'find', 'search', 'sort', 'think', 'means',
+    'should', 'would', 'could',
   ];
   if (alwaysAllow.some(word => msg.includes(word))) return false;
 
+  // Explicit off-topic / jailbreak phrases only
   const blockList = [
-    'weather', 'joke', 'who are you', 'what are you',
-    'how old', 'politics', 'news', 'movie', 'sport', 'food',
-    'recipe', 'girlfriend', 'boyfriend', 'love', 'game',
-    'ignore', 'forget', 'pretend', 'act as', 'jailbreak',
-    'ignore previous', 'ignore instructions', 'ignore your rules',
-    'you are now', 'new persona', 'bypass',
+    'weather', 'joke', 'politics', 'news', 'movie', 'sport', 'food',
+    'recipe', 'girlfriend', 'boyfriend', 'game',
+    'act as', 'jailbreak', 'ignore previous', 'ignore instructions',
+    'ignore your rules', 'you are now', 'new persona', 'bypass',
   ];
   if (blockList.some(word => msg.includes(word))) return true;
 
-  if (msg.split(' ').length < 6) return false;
-
+  // Last resort: require at least one topic keyword match
   return !problem.topics.some(topic => msg.includes(topic));
 }
 

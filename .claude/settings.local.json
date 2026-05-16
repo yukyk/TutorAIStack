@@ -30,7 +30,10 @@
       "Read(//c/Users/Yusuf/.config/ccstatusline/**)",
       "Read(//c/Users/Yusuf/AppData/Roaming/**)",
       "Read(//c/Users/Yusuf/**)",
-      "Bash(xargs grep -l \"five-hour\\\\|daily-usage\\\\|context-window\\\\|context-bar\")"
+      "Bash(xargs grep -l \"five-hour\\\\|daily-usage\\\\|context-window\\\\|context-bar\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
