@@ -327,7 +327,6 @@ export default function CompilerPage() {
   const isAdmin = session?.user?.isAdmin;
   const adminToken = session?.user?.adminToken;
 
-  // --- existing state (unchanged) ---
   const [problemId, setProblemId] = useState('two_sum');
   const [language, setLanguage] = useState(LANGUAGES[0]);
   const [code, setCode] = useState(PROBLEMS['two_sum'].starterCode['python']);
@@ -345,25 +344,21 @@ export default function CompilerPage() {
   const [isRunning, setIsRunning] = useState(false);
   const chatEndRef = useRef(null);
 
-  // --- layout state ---
   const [leftTab, setLeftTab] = useState('description');
-  const [leftWidth, setLeftWidth] = useState(40);
+  const [leftWidth, setLeftWidth] = useState(38);
   const [editorHeightPct, setEditorHeightPct] = useState(70);
   const [hDivHovered, setHDivHovered] = useState(false);
   const [vDivHovered, setVDivHovered] = useState(false);
 
-  // --- drag refs ---
   const isDraggingH = useRef(false);
   const isDraggingV = useRef(false);
   const mainRef = useRef(null);
   const rightPanelRef = useRef(null);
 
-  // auto-scroll chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [aiHistory, streamingContent]);
 
-  // drag resize
   useEffect(() => {
     function onMouseMove(e) {
       if (isDraggingH.current && mainRef.current) {
@@ -392,7 +387,6 @@ export default function CompilerPage() {
   const problem = PROBLEMS[problemId];
   const problemNumber = PROBLEM_KEYS.indexOf(problemId) + 1;
 
-  // --- existing handlers (unchanged) ---
   function handleProblemChange(e) {
     const newId = e.target.value;
     const newProblem = PROBLEMS[newId];
@@ -474,10 +468,8 @@ export default function CompilerPage() {
         language: language.value,
         problemId,
       });
-
       setExecuteResult(res.data);
       setIsRunning(false);
-
     } catch (err) {
       console.error(err);
       setIsRunning(false);
@@ -487,50 +479,88 @@ export default function CompilerPage() {
 
   const messagesLeft = MAX_FREE_MESSAGES - messageCount;
   const progressPercent = (messageCount / MAX_FREE_MESSAGES) * 100;
-  const progressColor = messageCount >= MAX_FREE_MESSAGES ? '#ef4444'
-    : messageCount >= 7 ? '#f97316'
-      : '#4F46E5';
+  const progressColor = progressPercent >= 100 ? '#ef4444'
+    : progressPercent >= 70 ? '#f97316'
+    : '#3B82F6';
 
-  const selectStyle = {
-    background: '#1a1a1a', color: '#fff', border: '1px solid #2a2a2a',
-    borderRadius: '6px', padding: '6px 10px', fontSize: '13px',
-    cursor: 'pointer', outline: 'none',
-  };
+  const avatarInitial = session?.user?.name?.[0]?.toUpperCase()
+    || session?.user?.email?.[0]?.toUpperCase()
+    || null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'sans-serif', background: '#0f0f0f', color: '#fff', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif', background: '#0B0F19', color: '#f4f4f5', overflow: 'hidden' }}>
 
-      {/* TOP NAVBAR */}
-      <div style={{ height: '48px', flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 16px', gap: '12px', borderBottom: '1px solid #2a2a2a', background: '#0d0d0d' }}>
-        <select value={problemId} onChange={handleProblemChange} style={{ ...selectStyle, maxWidth: '260px' }}>
-          {Object.values(PROBLEMS).map(p => (
-            <option key={p.id} value={p.id}>{p.title} — {p.difficulty}</option>
-          ))}
-        </select>
+      {/* TOP BAR */}
+      <div style={{ height: '48px', flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 16px', borderBottom: '1px solid #1e1e1e', background: '#0d1117', gap: '12px' }}>
 
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-          <span style={{ fontSize: '15px', fontWeight: '700', letterSpacing: '-0.02em' }}>
-            Tutor<span style={{ color: '#4F46E5' }}>AI</span>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: '110px' }}>
+          <span style={{ color: '#3B82F6', fontWeight: '700', fontSize: '14px', fontFamily: 'monospace', letterSpacing: '-0.02em' }}>&lt;/&gt;</span>
+          <span style={{ fontSize: '14px', fontWeight: '600', color: '#f4f4f5', letterSpacing: '-0.01em' }}>TutorAI</span>
+        </div>
+
+        {/* Problem selector — center */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+          <select
+            value={problemId}
+            onChange={handleProblemChange}
+            style={{
+              background: '#0f1729', color: '#f4f4f5', border: '1px solid #1e1e1e',
+              borderRadius: '6px', padding: '5px 10px', fontSize: '13px',
+              cursor: 'pointer', outline: 'none', maxWidth: '280px',
+            }}
+          >
+            {Object.values(PROBLEMS).map(p => (
+              <option key={p.id} value={p.id}>{p.title}</option>
+            ))}
+          </select>
+          <span style={{
+            fontSize: '11px', padding: '2px 8px', borderRadius: '4px',
+            background: problem.difficultyBg, color: problem.difficultyColor,
+            fontWeight: '600', letterSpacing: '0.02em', flexShrink: 0,
+          }}>
+            {problem.difficulty}
           </span>
         </div>
 
-        <select value={language.value} onChange={handleLanguageChange} style={selectStyle}>
-          {LANGUAGES.map(l => (
-            <option key={l.value} value={l.value}>{l.label}</option>
-          ))}
-        </select>
+        {/* Right: language + avatar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '110px', justifyContent: 'flex-end' }}>
+          <select
+            value={language.value}
+            onChange={handleLanguageChange}
+            style={{
+              background: '#0f1729', color: '#71717a', border: '1px solid #1e1e1e',
+              borderRadius: '6px', padding: '5px 10px', fontSize: '12px',
+              cursor: 'pointer', outline: 'none',
+            }}
+          >
+            {LANGUAGES.map(l => (
+              <option key={l.value} value={l.value}>{l.label}</option>
+            ))}
+          </select>
+          {avatarInitial && (
+            <div style={{
+              width: '28px', height: '28px', borderRadius: '50%',
+              background: '#3B82F6', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: '11px', fontWeight: '700',
+              color: '#fff', flexShrink: 0, userSelect: 'none',
+            }}>
+              {avatarInitial}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* MAIN AREA */}
       <div ref={mainRef} style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
 
         {/* LEFT PANEL */}
-        <div style={{ width: `${leftWidth}%`, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+        <div style={{ width: `${leftWidth}%`, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, background: '#0d1117' }}>
 
-          {/* Tab bar */}
-          <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a', background: '#0d0d0d', flexShrink: 0 }}>
+          {/* Tabs */}
+          <div style={{ display: 'flex', borderBottom: '1px solid #1e1e1e', flexShrink: 0, paddingLeft: '4px' }}>
             {[
-              { key: 'description', label: 'Description' },
+              { key: 'description', label: 'Problem' },
               { key: 'aiTutor', label: 'AI Tutor' },
               { key: 'submissions', label: 'Submissions' },
             ].map(tab => (
@@ -538,11 +568,11 @@ export default function CompilerPage() {
                 key={tab.key}
                 onClick={() => setLeftTab(tab.key)}
                 style={{
-                  padding: '0 18px', height: '40px', background: 'transparent', border: 'none',
-                  borderBottom: leftTab === tab.key ? '2px solid #4F46E5' : '2px solid transparent',
-                  color: leftTab === tab.key ? '#fff' : '#555',
-                  fontSize: '13px', fontWeight: '600', cursor: 'pointer',
-                  transition: 'color 0.15s',
+                  padding: '0 16px', height: '40px', background: 'transparent', border: 'none',
+                  borderBottom: leftTab === tab.key ? '2px solid #6366f1' : '2px solid transparent',
+                  color: leftTab === tab.key ? '#f4f4f5' : '#52525b',
+                  fontSize: '13px', fontWeight: '500', cursor: 'pointer',
+                  transition: 'color 0.15s', marginBottom: '-1px',
                 }}
               >
                 {tab.label}
@@ -550,36 +580,39 @@ export default function CompilerPage() {
             ))}
           </div>
 
-          {/* DESCRIPTION TAB */}
+          {/* PROBLEM TAB */}
           {leftTab === 'description' && (
-            <div style={{ flex: 1, overflowY: 'auto', padding: '24px', minHeight: 0 }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px', minHeight: 0 }}>
 
-              <h1 style={{ fontSize: '18px', fontWeight: '700', margin: '0 0 10px', lineHeight: '1.3' }}>
-                {problemNumber}. {problem.title}
-              </h1>
-              <span style={{
-                fontSize: '11px', padding: '3px 10px', borderRadius: '12px',
-                background: problem.difficultyBg, color: problem.difficultyColor, fontWeight: '600',
-              }}>
-                {problem.difficulty}
-              </span>
+              <div style={{ marginBottom: '18px' }}>
+                <h1 style={{ fontSize: '17px', fontWeight: '700', margin: '0 0 10px', color: '#f4f4f5', lineHeight: '1.35', letterSpacing: '-0.01em' }}>
+                  {problemNumber}. {problem.title}
+                </h1>
+                <span style={{
+                  fontSize: '11px', padding: '2px 8px', borderRadius: '4px',
+                  background: problem.difficultyBg, color: problem.difficultyColor,
+                  fontWeight: '600', letterSpacing: '0.02em',
+                }}>
+                  {problem.difficulty}
+                </span>
+              </div>
 
-              <p style={{ fontSize: '14px', lineHeight: '1.8', color: '#ccc', margin: '20px 0 28px' }}>
+              <p style={{ fontSize: '14px', lineHeight: '1.75', color: '#a1a1aa', margin: '0 0 28px' }}>
                 {problem.description}
               </p>
 
               <div style={{ marginBottom: '28px' }}>
-                <p style={{ fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '0.06em', marginBottom: '10px' }}>
-                  EXAMPLES
+                <p style={{ fontSize: '10px', fontWeight: '600', color: '#3f3f46', letterSpacing: '0.1em', marginBottom: '10px', textTransform: 'uppercase' }}>
+                  Examples
                 </p>
                 {problem.examples.map((ex, i) => (
-                  <div key={i} style={{ background: '#141414', border: '1px solid #222', borderRadius: '8px', padding: '14px 16px', marginBottom: '10px', fontSize: '13px', fontFamily: 'monospace' }}>
-                    <div style={{ marginBottom: '6px' }}>
-                      <span style={{ color: '#555' }}>Input:{'  '}</span>
-                      <span style={{ color: '#e2e2e2' }}>{ex.input}</span>
+                  <div key={i} style={{ background: '#0d1117', border: '1px solid #1e1e1e', borderRadius: '8px', padding: '12px 14px', marginBottom: '8px', fontSize: '13px', fontFamily: 'monospace' }}>
+                    <div style={{ marginBottom: '5px' }}>
+                      <span style={{ color: '#3f3f46' }}>Input:{'  '}</span>
+                      <span style={{ color: '#e4e4e7' }}>{ex.input}</span>
                     </div>
                     <div>
-                      <span style={{ color: '#555' }}>Output: </span>
+                      <span style={{ color: '#3f3f46' }}>Output: </span>
                       <span style={{ color: '#4ade80' }}>{ex.output}</span>
                     </div>
                   </div>
@@ -587,23 +620,23 @@ export default function CompilerPage() {
               </div>
 
               <div style={{ marginBottom: '28px' }}>
-                <p style={{ fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '0.06em', marginBottom: '10px' }}>
-                  EDGE CASES TO CONSIDER
+                <p style={{ fontSize: '10px', fontWeight: '600', color: '#3f3f46', letterSpacing: '0.1em', marginBottom: '10px', textTransform: 'uppercase' }}>
+                  Edge Cases
                 </p>
                 {problem.edgeCases.map((ec, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '10px', fontSize: '13px', color: '#aaa', lineHeight: '1.65' }}>
-                    <span style={{ color: '#f97316', flexShrink: 0, marginTop: '1px' }}>⚠</span>
+                  <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '10px', fontSize: '13px', color: '#71717a', lineHeight: '1.65' }}>
+                    <span style={{ color: '#f97316', flexShrink: 0 }}>⚠</span>
                     <span>{ec}</span>
                   </div>
                 ))}
               </div>
 
               <div>
-                <p style={{ fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '0.06em', marginBottom: '10px' }}>
-                  CONSTRAINTS
+                <p style={{ fontSize: '10px', fontWeight: '600', color: '#3f3f46', letterSpacing: '0.1em', marginBottom: '10px', textTransform: 'uppercase' }}>
+                  Constraints
                 </p>
                 {problem.constraints.map((c, i) => (
-                  <p key={i} style={{ fontSize: '13px', color: '#aaa', margin: '0 0 6px', fontFamily: 'monospace' }}>• {c}</p>
+                  <p key={i} style={{ fontSize: '13px', color: '#52525b', margin: '0 0 5px', fontFamily: 'monospace' }}>• {c}</p>
                 ))}
               </div>
             </div>
@@ -614,17 +647,14 @@ export default function CompilerPage() {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
 
               {/* Mode switcher */}
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid #2a2a2a', background: '#0a0a0a', flexShrink: 0 }}>
-                <p style={{ fontSize: '11px', fontWeight: '700', color: '#555', letterSpacing: '0.06em', margin: '0 0 10px' }}>
-                  AI TUTOR MODE
-                </p>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <div style={{ padding: '10px 14px', borderBottom: '1px solid #1e1e1e', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                   {AI_MODES.map(mode => (
                     <button key={mode} onClick={() => setAiMode(mode)} style={{
-                      padding: '4px 12px', borderRadius: '20px', fontSize: '11px',
-                      fontWeight: '600', cursor: 'pointer', border: 'none',
-                      background: aiMode === mode ? '#4F46E5' : '#1e1e1e',
-                      color: aiMode === mode ? '#fff' : '#666',
+                      padding: '4px 12px', borderRadius: '20px', fontSize: '12px',
+                      fontWeight: '500', cursor: 'pointer', border: 'none',
+                      background: aiMode === mode ? '#3B82F6' : '#0f1729',
+                      color: aiMode === mode ? '#fff' : '#71717a',
                       transition: 'all 0.15s',
                     }}>
                       {mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -634,83 +664,91 @@ export default function CompilerPage() {
               </div>
 
               {/* Chat history */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '16px', fontSize: '13px', lineHeight: '1.6', minHeight: 0 }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '16px', fontSize: '13px', lineHeight: '1.6', minHeight: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {aiHistory.map((msg, i) => (
-                  <div key={i} style={{ marginBottom: '16px' }}>
-                    <span style={{
-                      fontSize: '10px', fontWeight: '700', letterSpacing: '0.06em',
-                      color: msg.role === 'user' ? '#4F46E5' : '#4ade80',
-                    }}>
-                      {msg.role === 'user' ? 'YOU' : 'TUTOR'}
-                    </span>
-                    <p style={{ margin: '3px 0 0', color: msg.role === 'user' ? '#aaa' : '#fff', whiteSpace: 'pre-line' }}>
-                      {msg.content}
-                    </p>
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                    {msg.role === 'user' ? (
+                      <div style={{
+                        background: '#0f1525', borderRadius: '8px 8px 2px 8px',
+                        padding: '10px 14px', maxWidth: '86%',
+                        color: '#f4f4f5', fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-line',
+                      }}>
+                        {msg.content}
+                      </div>
+                    ) : (
+                      <div style={{
+                        borderLeft: '3px solid #6366f1', paddingLeft: '12px',
+                        maxWidth: '96%', color: '#e4e4e7', fontSize: '13px',
+                        lineHeight: '1.7', whiteSpace: 'pre-line',
+                      }}>
+                        {msg.content}
+                      </div>
+                    )}
                   </div>
                 ))}
 
                 {aiLoading && !isStreaming && (
-                  <div style={{ marginBottom: '16px' }}>
-                    <span style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.06em', color: '#4ade80' }}>TUTOR</span>
-                    <p style={{ margin: '3px 0 0', color: '#555' }}>thinking...</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <div style={{ borderLeft: '3px solid #6366f1', paddingLeft: '12px', color: '#3f3f46', fontSize: '13px' }}>
+                      thinking...
+                    </div>
                   </div>
                 )}
 
                 {isStreaming && (
-                  <div style={{ marginBottom: '16px' }}>
-                    <span style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.06em', color: '#4ade80' }}>TUTOR</span>
-                    <p style={{ margin: '3px 0 0', color: '#fff', whiteSpace: 'pre-line' }}>
-                      {streamingContent}<span style={{ opacity: 0.4 }}>▌</span>
-                    </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <div style={{ borderLeft: '3px solid #6366f1', paddingLeft: '12px', maxWidth: '96%', color: '#e4e4e7', fontSize: '13px', lineHeight: '1.7', whiteSpace: 'pre-line' }}>
+                      {streamingContent}<span style={{ opacity: 0.35 }}>▌</span>
+                    </div>
                   </div>
                 )}
 
                 <div ref={chatEndRef} />
               </div>
 
-              {/* Progress bar + input */}
-              <div style={{ padding: '12px 16px', borderTop: '1px solid #2a2a2a', background: '#0a0a0a', flexShrink: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '11px', color: '#444' }}>{messagesLeft} free messages remaining</span>
-                  <div style={{ height: '4px', width: '100px', background: '#1e1e1e', borderRadius: '2px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${progressPercent}%`, background: progressColor, borderRadius: '2px', transition: 'all 0.3s ease' }} />
+              {/* Progress + input */}
+              <div style={{ padding: '10px 14px', borderTop: '1px solid #1e1e1e', flexShrink: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '9px' }}>
+                  <span style={{ fontSize: '11px', color: '#3f3f46' }}>{messagesLeft} messages left</span>
+                  <div style={{ height: '2px', width: '72px', background: 'rgba(255,255,255,0.08)', borderRadius: '1px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${progressPercent}%`, background: progressColor, borderRadius: '1px', transition: 'all 0.3s ease' }} />
                   </div>
                 </div>
 
                 {isLimitReached ? (
-                  <div style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
-                    <p style={{ fontSize: '14px', fontWeight: '600', color: '#fff', margin: '0 0 4px' }}>
-                      You've used your 10 free messages
+                  <div style={{ background: '#0d1117', border: '1px solid #1e1e1e', borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '13px', fontWeight: '600', color: '#f4f4f5', margin: '0 0 4px' }}>
+                      You've used your {MAX_FREE_MESSAGES} free messages
                     </p>
-                    <p style={{ fontSize: '12px', color: '#555', margin: '0 0 12px' }}>
-                      Upgrade to Pro for unlimited access to all 5 modes
+                    <p style={{ fontSize: '12px', color: '#52525b', margin: '0 0 12px' }}>
+                      Upgrade to Pro for unlimited access
                     </p>
                     <button style={{
-                      background: '#4F46E5', color: '#fff', border: 'none',
-                      borderRadius: '8px', padding: '10px 20px', fontSize: '13px',
-                      fontWeight: '600', cursor: 'not-allowed', opacity: 0.7, width: '100%',
+                      background: '#3B82F6', color: '#fff', border: 'none',
+                      borderRadius: '6px', padding: '9px 20px', fontSize: '13px',
+                      fontWeight: '600', cursor: 'not-allowed', opacity: 0.65, width: '100%',
                     }}>
                       Upgrade to Pro — Coming Soon
                     </button>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '7px' }}>
                     <input
                       value={aiMessage}
                       onChange={e => setAiMessage(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && !aiLoading && !isStreaming && handleAskAI()}
                       placeholder="Ask the tutor..."
                       style={{
-                        flex: 1, padding: '8px 12px', borderRadius: '8px',
-                        background: '#1e1e1e', border: '1px solid #2a2a2a',
-                        color: '#fff', fontSize: '13px', outline: 'none',
+                        flex: 1, padding: '8px 11px', borderRadius: '6px',
+                        background: '#0d1117', border: '1px solid #1e1e1e',
+                        color: '#f4f4f5', fontSize: '13px', outline: 'none',
                       }}
                     />
                     <button onClick={handleAskAI} disabled={aiLoading || isStreaming} style={{
-                      padding: '8px 16px', borderRadius: '8px', border: 'none',
-                      background: '#4F46E5', color: '#fff', fontSize: '13px',
+                      padding: '8px 14px', borderRadius: '6px', border: 'none',
+                      background: '#3B82F6', color: '#fff', fontSize: '13px',
                       fontWeight: '600', cursor: (aiLoading || isStreaming) ? 'not-allowed' : 'pointer',
-                      opacity: (aiLoading || isStreaming) ? 0.6 : 1,
+                      opacity: (aiLoading || isStreaming) ? 0.55 : 1, flexShrink: 0,
                     }}>
                       {aiLoading ? '...' : 'Ask'}
                     </button>
@@ -722,9 +760,8 @@ export default function CompilerPage() {
 
           {/* SUBMISSIONS TAB */}
           {leftTab === 'submissions' && (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '8px' }}>
-              <span style={{ fontSize: '24px' }}>🚧</span>
-              <p style={{ color: '#444', fontSize: '14px', margin: 0 }}>Coming Soon</p>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '6px' }}>
+              <p style={{ color: '#3f3f46', fontSize: '13px', margin: 0 }}>Coming soon</p>
             </div>
           )}
         </div>
@@ -736,13 +773,43 @@ export default function CompilerPage() {
           onMouseLeave={() => setHDivHovered(false)}
           style={{
             width: '4px', flexShrink: 0, cursor: 'col-resize',
-            background: hDivHovered ? '#4F46E5' : '#1e1e1e',
+            background: hDivHovered ? '#3B82F6' : 'rgba(255,255,255,0.08)',
             transition: 'background 0.15s',
           }}
         />
 
         {/* RIGHT PANEL */}
         <div ref={rightPanelRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+
+          {/* Editor toolbar */}
+          <div style={{ height: '36px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 14px', background: '#0d1117', borderBottom: '1px solid #1e1e1e' }}>
+            <select
+              value={language.value}
+              onChange={handleLanguageChange}
+              style={{
+                background: 'transparent', color: '#52525b', border: 'none',
+                fontSize: '12px', cursor: 'pointer', outline: 'none',
+                fontFamily: 'system-ui, sans-serif',
+              }}
+            >
+              {LANGUAGES.map(l => (
+                <option key={l.value} value={l.value} style={{ background: '#0d1117', color: '#f4f4f5' }}>{l.label}</option>
+              ))}
+            </select>
+            <button
+              onClick={handleRunCode}
+              disabled={isRunning}
+              style={{
+                padding: '4px 14px', borderRadius: '6px', border: 'none',
+                background: isRunning ? '#2563eb' : '#3B82F6',
+                color: '#fff', fontSize: '12px', fontWeight: '600',
+                cursor: isRunning ? 'not-allowed' : 'pointer',
+                transition: 'background 0.15s',
+              }}
+            >
+              {isRunning ? 'Running...' : 'Run Code'}
+            </button>
+          </div>
 
           {/* Monaco Editor */}
           <div style={{ height: `${editorHeightPct}%`, minHeight: 0, overflow: 'hidden' }}>
@@ -751,7 +818,18 @@ export default function CompilerPage() {
               language={language.value}
               value={code}
               onChange={val => setCode(val)}
-              theme="vs-dark"
+              beforeMount={(monaco) => {
+                monaco.editor.defineTheme('tutorai-dark', {
+                  base: 'vs-dark',
+                  inherit: true,
+                  rules: [],
+                  colors: { 'editor.background': '#0d1117' },
+                });
+              }}
+              onMount={(editor) => {
+                editor.updateOptions({ theme: 'tutorai-dark' });
+              }}
+              theme="tutorai-dark"
               options={{
                 fontSize: 14,
                 minimap: { enabled: false },
@@ -770,42 +848,27 @@ export default function CompilerPage() {
             onMouseLeave={() => setVDivHovered(false)}
             style={{
               height: '4px', flexShrink: 0, cursor: 'row-resize',
-              background: vDivHovered ? '#4F46E5' : '#1e1e1e',
+              background: vDivHovered ? '#3B82F6' : 'rgba(255,255,255,0.08)',
               transition: 'background 0.15s',
             }}
           />
 
           {/* OUTPUT PANEL */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0a0a0a', minHeight: 0, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: '40px', borderBottom: '1px solid #1e1e1e', flexShrink: 0 }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#444', letterSpacing: '0.06em' }}>OUTPUT</span>
-              <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#080d14', minHeight: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 14px', height: '36px', borderBottom: '1px solid #1e1e1e', flexShrink: 0 }}>
+              <span style={{ fontSize: '10px', fontWeight: '600', color: '#3f3f46', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Output</span>
+              {executeResult && (
                 <button
-                  onClick={handleRunCode}
-                  disabled={isRunning || isStreaming}
-                  style={{
-                    padding: '4px 14px', borderRadius: '6px', border: '1px solid #2a2a2a',
-                    background: 'transparent',
-                    color: isRunning || isStreaming ? '#333' : '#aaa',
-                    fontSize: '12px', fontWeight: '600',
-                    cursor: isRunning || isStreaming ? 'not-allowed' : 'pointer',
-                    transition: 'color 0.15s',
-                  }}
+                  onClick={() => setExecuteResult(null)}
+                  style={{ background: 'transparent', border: 'none', color: '#3f3f46', fontSize: '11px', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px' }}
                 >
-                  {isRunning ? 'Running...' : 'Run Code'}
+                  Clear
                 </button>
-                <button disabled style={{
-                  padding: '4px 14px', borderRadius: '6px', border: 'none',
-                  background: '#1a1a1a', color: '#333', fontSize: '12px',
-                  fontWeight: '600', cursor: 'not-allowed',
-                }}>
-                  Submit
-                </button>
-              </div>
+              )}
             </div>
-            <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
+            <div style={{ flex: 1, padding: '14px 16px', overflowY: 'auto' }}>
               {isRunning ? (
-                <p style={{ color: '#555', fontSize: '13px', margin: 0, fontFamily: 'monospace' }}>Running...</p>
+                <p style={{ color: '#3f3f46', fontSize: '13px', margin: 0, fontFamily: 'monospace' }}>Running...</p>
               ) : executeResult ? (
                 <div style={{ fontFamily: 'monospace', fontSize: '13px' }}>
                   {executeResult.error ? (
@@ -819,24 +882,24 @@ export default function CompilerPage() {
                         {executeResult.passed} / {executeResult.total} TEST CASES PASSED
                       </p>
                       {executeResult.testResults.map((t, i) => (
-                        <div key={i} style={{ marginBottom: '14px', paddingBottom: '14px', borderBottom: '1px solid #1a1a1a' }}>
+                        <div key={i} style={{ marginBottom: '14px', paddingBottom: '14px', borderBottom: '1px solid #161616' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
                             <span style={{ color: t.p ? '#4ade80' : '#ef4444', fontSize: '12px', fontWeight: '700', flexShrink: 0 }}>
-                              {t.p ? '✓ Passed' : '✗ Failed'}
+                              {t.p ? '✓' : '✗'} {t.p ? 'Passed' : 'Failed'}
                             </span>
                             {t.isEdgeCase && (
-                              <span style={{ fontSize: '10px', fontWeight: '700', color: '#f97316', background: '#2a1500', padding: '1px 7px', borderRadius: '10px', border: '1px solid #f97316', flexShrink: 0 }}>
+                              <span style={{ fontSize: '10px', fontWeight: '600', color: '#f97316', background: '#1a0a00', padding: '1px 7px', borderRadius: '4px', border: '1px solid rgba(249,115,22,0.25)', flexShrink: 0 }}>
                                 Edge Case
                               </span>
                             )}
-                            <span style={{ color: '#555', fontSize: '11px' }}>{t.l}</span>
+                            <span style={{ color: '#3f3f46', fontSize: '11px' }}>{t.l}</span>
                           </div>
                           {t.err ? (
-                            <pre style={{ margin: '0 0 0 0', color: '#ef4444', fontSize: '12px', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{t.err}</pre>
+                            <pre style={{ margin: 0, color: '#f97316', fontSize: '12px', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{t.err}</pre>
                           ) : !t.p ? (
                             <div style={{ fontSize: '12px' }}>
-                              <p style={{ margin: '0 0 2px', color: '#aaa' }}>Expected: <span style={{ color: '#4ade80' }}>{JSON.stringify(t.e)}</span></p>
-                              <p style={{ margin: 0, color: '#aaa' }}>Got: <span style={{ color: '#ef4444' }}>{JSON.stringify(t.r)}</span></p>
+                              <p style={{ margin: '0 0 2px', color: '#71717a' }}>Expected: <span style={{ color: '#4ade80' }}>{JSON.stringify(t.e)}</span></p>
+                              <p style={{ margin: 0, color: '#71717a' }}>Got: <span style={{ color: '#ef4444' }}>{JSON.stringify(t.r)}</span></p>
                             </div>
                           ) : null}
                         </div>
@@ -860,14 +923,14 @@ export default function CompilerPage() {
                         </pre>
                       ) : null}
                       {!executeResult.stdout && !executeResult.stderr ? (
-                        <p style={{ color: '#555', margin: 0 }}>No output.</p>
+                        <p style={{ color: '#3f3f46', margin: 0 }}>No output.</p>
                       ) : null}
                     </>
                   )}
                 </div>
               ) : (
-                <p style={{ color: '#333', fontSize: '13px', margin: 0, fontFamily: 'monospace' }}>
-                  // Run your code to see output here.
+                <p style={{ color: '#27272a', fontSize: '13px', margin: 0, fontFamily: 'monospace' }}>
+                  // Run your code to see output here
                 </p>
               )}
             </div>
