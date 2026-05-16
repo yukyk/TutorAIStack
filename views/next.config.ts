@@ -3,6 +3,7 @@ import path from 'path';
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['bcryptjs'],
+  turbopack: {},
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
