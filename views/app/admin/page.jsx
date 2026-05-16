@@ -16,6 +16,11 @@ function formatUptime(s) {
   return `${h}h ${m}m ${sec}s`;
 }
 
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function Card({ title, children, fullWidth }) {
   return (
     <div style={{
@@ -54,6 +59,14 @@ function SmallStat({ label, value }) {
 
 const MODE_LABELS = { hint: 'Hint', logic: 'Logic', humanize: 'Humanize', debug: 'Debug', optimize: 'Optimize' };
 
+const tableHeaderStyle = {
+  color: '#6b7280', fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+  letterSpacing: '0.08em', padding: '0 12px 10px 0', textAlign: 'left', borderBottom: '1px solid #1f2937',
+};
+const tableCellStyle = {
+  color: '#f9fafb', fontSize: 13, padding: '10px 12px 10px 0', borderBottom: '1px solid #111827',
+};
+
 export default function AdminPage() {
   const { data: session, status } = useSession();
   const [authed, setAuthed] = useState(false);
@@ -64,6 +77,8 @@ export default function AdminPage() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [waitlistCount, setWaitlistCount] = useState(null);
+  const [usersData, setUsersData] = useState(null);
+  const [waitlistData, setWaitlistData] = useState(null);
   const [lastRefresh, setLastRefresh] = useState(null);
 
   useEffect(() => {
@@ -83,12 +98,15 @@ export default function AdminPage() {
 
   const fetchData = useCallback(async (t) => {
     try {
-      const [statsRes, waitlistRes] = await Promise.all([
+      const [statsRes, waitlistRes, adminWaitlistRes] = await Promise.all([
         axios.get('/api/admin/stats', { headers: { Authorization: t } }),
         axios.get('/api/waitlist').catch(() => ({ data: { count: null } })),
+        axios.get('/api/admin/waitlist', { headers: { Authorization: t } }).catch(() => ({ data: { users: [], waitlist: [] } })),
       ]);
       setStats(statsRes.data);
       setWaitlistCount(waitlistRes.data.count);
+      setUsersData(adminWaitlistRes.data.users ?? []);
+      setWaitlistData(adminWaitlistRes.data.waitlist ?? []);
       setLastRefresh(new Date());
     } catch (err) {
       if (err.response?.status === 401) {
@@ -132,6 +150,8 @@ export default function AdminPage() {
     setToken('');
     setStats(null);
     setWaitlistCount(null);
+    setUsersData(null);
+    setWaitlistData(null);
     setEmail('');
     setPassword('');
   };
@@ -210,7 +230,15 @@ export default function AdminPage() {
 
         <Card title="Traffic">
           <BigStat label="Page visits (since restart)" value={stats.pageVisits} />
-          <SmallStat label="Active sessions estimate" value="—" />
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ color: '#6b7280', fontSize: 12, marginBottom: 4 }}>Online now</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: stats.onlineNow > 0 ? '#4ade80' : '#374151', boxShadow: stats.onlineNow > 0 ? '0 0 6px #4ade80' : 'none' }} />
+              <div style={{ color: '#f9fafb', fontSize: 24, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1 }}>
+                {stats.onlineNow}
+              </div>
+            </div>
+          </div>
         </Card>
 
         <Card title="AI Usage">
@@ -266,6 +294,68 @@ export default function AdminPage() {
             </div>
           </div>
           <div style={{ color: '#374151', fontSize: 11, marginTop: 12 }}>To update SEO, edit views/app/layout.tsx</div>
+        </Card>
+
+        <Card title={`Registered Users (${usersData ? usersData.length : '…'})`} fullWidth>
+          {!usersData || usersData.length === 0 ? (
+            <div style={{ color: '#6b7280', fontSize: 13 }}>No registered users yet.</div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={tableHeaderStyle}>Name</th>
+                    <th style={tableHeaderStyle}>Email</th>
+                    <th style={tableHeaderStyle}>Auth</th>
+                    <th style={tableHeaderStyle}>Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usersData.map((u, i) => (
+                    <tr key={i}>
+                      <td style={tableCellStyle}>{u.name || '—'}</td>
+                      <td style={{ ...tableCellStyle, color: '#93c5fd' }}>{u.email}</td>
+                      <td style={tableCellStyle}>
+                        <span style={{
+                          fontSize: 11, fontFamily: 'monospace', padding: '2px 8px', borderRadius: 20,
+                          background: u.auth_method === 'google' ? '#1e3a5f' : '#1f2937',
+                          color: u.auth_method === 'google' ? '#60a5fa' : '#9ca3af',
+                        }}>
+                          {u.auth_method}
+                        </span>
+                      </td>
+                      <td style={{ ...tableCellStyle, color: '#6b7280' }}>{formatDate(u.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+
+        <Card title={`Waitlist Emails (${waitlistData ? waitlistData.length : '…'})`} fullWidth>
+          {!waitlistData || waitlistData.length === 0 ? (
+            <div style={{ color: '#6b7280', fontSize: 13 }}>No waitlist signups yet.</div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={tableHeaderStyle}>Email</th>
+                    <th style={tableHeaderStyle}>Signed up</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {waitlistData.map((w, i) => (
+                    <tr key={i}>
+                      <td style={{ ...tableCellStyle, color: '#93c5fd' }}>{w.email}</td>
+                      <td style={{ ...tableCellStyle, color: '#6b7280' }}>{formatDate(w.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </Card>
 
       </div>

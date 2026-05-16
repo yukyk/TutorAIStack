@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { FOUNDATION_PROMPT, MODE_PROMPTS } from '@/lib/prompts/modes';
-import { incrementAI } from '@/lib/counters';
+import { incrementAI, trackSession } from '@/lib/counters';
 
 const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -146,8 +146,9 @@ function isMessageOffTopic(message: string, problem: Problem): boolean {
 export async function POST(request: NextRequest): Promise<NextResponse> {
   console.log('GROQ key present:', !!process.env.GROQ_API_KEY);
   const adminToken = request.headers.get('x-admin-token');
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  trackSession(ip);
   if (!adminToken || adminToken !== process.env.ADMIN_PASSWORD) {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
     const now = Date.now();
     if (!requestCounts[ip]) {
       requestCounts[ip] = { count: 1, resetAt: now + 60000 };
