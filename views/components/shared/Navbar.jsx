@@ -50,7 +50,7 @@ export default function Navbar() {
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 <img
-                  src={session.user?.image ?? ''}
+                  src={session.user?.image || '/default-avatar.png'}
                   alt={session.user?.name ?? ''}
                   className="w-8 h-8 rounded-full border border-white/20"
                 />
@@ -61,7 +61,7 @@ export default function Navbar() {
               {dropdownOpen && (
                 <div className="absolute top-full right-0 mt-2 bg-[#0d0d0d] border border-white/10 rounded-xl py-1 min-w-[140px] shadow-xl">
                   <button
-                    onClick={() => { signOut(); setDropdownOpen(false); }}
+                    onClick={() => { signOut({ callbackUrl: '/' }); setDropdownOpen(false); }}
                     className="w-full text-left px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
                   >
                     Sign Out
@@ -98,14 +98,14 @@ export default function Navbar() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <img
-                  src={session.user?.image ?? ''}
+                  src={session.user?.image || '/default-avatar.png'}
                   alt={session.user?.name ?? ''}
                   className="w-8 h-8 rounded-full border border-white/20"
                 />
                 <span className="text-sm text-white/80">{session.user?.name?.split(' ')[0]}</span>
               </div>
               <button
-                onClick={() => signOut()}
+                onClick={() => signOut({ callbackUrl: '/' })}
                 className="text-sm text-white/40 hover:text-white transition-colors"
               >
                 Sign Out

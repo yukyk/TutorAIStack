@@ -2,8 +2,8 @@ import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import type { NextAuthOptions } from 'next-auth';
-import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
+import supabase from '@/lib/db';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,6 +12,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
         params: {
+          prompt: 'select_account',
           scope: 'openid profile email',
         },
       },
@@ -32,17 +33,12 @@ export const authOptions: NextAuthOptions = {
           return { id: 'admin', email: credentials.email, name: 'Admin', isAdmin: true } as any;
         }
 
-        const conn = await mysql.createConnection({
-          host: process.env.DB_HOST || 'localhost',
-          user: process.env.DB_USER || 'root',
-          password: process.env.DB_PASSWORD || '',
-          database: process.env.DB_NAME || 'tutor_ai',
-        });
+        const { data: user } = await supabase
+          .from('users')
+          .select('id, name, email, password_hash')
+          .eq('email', credentials.email)
+          .single();
 
-        const [rows] = await conn.query('SELECT * FROM users WHERE email = ?', [credentials.email]);
-        await conn.end();
-
-        const user = (rows as any[])[0];
         if (!user?.password_hash) return null;
 
         const valid = await bcrypt.compare(credentials.password, user.password_hash);
@@ -54,8 +50,33 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 24 * 60 * 60,
   },
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        try {
+          const { data: existing } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', user.email)
+            .single();
+
+          if (!existing) {
+            await supabase
+              .from('users')
+              .insert({
+                name: user.name,
+                email: user.email,
+                password_hash: null,
+              });
+          }
+        } catch (err) {
+          console.error('Google signIn DB error:', err);
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if ((user as any)?.isAdmin) {
         token.isAdmin = true;
@@ -71,8 +92,14 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  events: {
+    async signOut({ token }) {
+      token = {};
+    },
+  },
   pages: {
     signIn: '/login',
+    signOut: '/',
   },
 };
 

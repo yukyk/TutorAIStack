@@ -144,6 +144,7 @@ function isMessageOffTopic(message: string, problem: Problem): boolean {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  console.log('GROQ key present:', !!process.env.GROQ_API_KEY);
   const adminToken = request.headers.get('x-admin-token');
   if (!adminToken || adminToken !== process.env.ADMIN_PASSWORD) {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';

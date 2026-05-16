@@ -21,7 +21,6 @@ nextApp.prepare().then(() => {
   const app = express();
 
   app.use(cors());
-  app.use(express.json());
   app.use(express.static(path.join(__dirname, 'public')));
 
   // NextAuth — pass through to Next.js with full path preserved
@@ -30,7 +29,6 @@ nextApp.prepare().then(() => {
     return handle(req, res);
   });
 
-  // Express handles all other API routes
   app.use('/api', apiRoutes);
 
   app.get('/', (req, res) => {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import pool from '@/lib/db';
+import supabase from '@/lib/db';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   let body: { name?: string; email?: string; password?: string };
@@ -21,16 +21,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const [existing] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
-    if ((existing as unknown[]).length > 0) {
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existing) {
       return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 });
     }
 
     const hash = await bcrypt.hash(password, 12);
-    await pool.query(
-      'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)',
-      [name, email, hash]
-    );
+    const { error } = await supabase
+      .from('users')
+      .insert({ name, email, password_hash: hash });
+
+    if (error) {
+      console.error('Signup error:', error);
+      return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {

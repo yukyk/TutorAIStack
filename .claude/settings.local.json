@@ -14,7 +14,23 @@
       "Bash(taskkill /F /IM node.exe)",
       "Bash(taskkill /PID 22500 /F)",
       "PowerShell(Stop-Process *)",
-      "Bash(findstr /v \"KEY\\\\|PASSWORD\\\\|SECRET\\\\|PASS\")"
+      "Bash(findstr /v \"KEY\\\\|PASSWORD\\\\|SECRET\\\\|PASS\")",
+      "Bash(grep -i \"\\\\.log$\")",
+      "PowerShell(echo '{\"usage_limits\":{\"five_hour_used_percentage\":35,\"seven_day_used_percentage\":60}}' | powershell -NoProfile -File \"$env:USERPROFILE\\\\.claude\\\\statusline.ps1\")",
+      "PowerShell(echo '{\"usage_limits\":{\"five_hour_used_percentage\":35,\"seven_day_used_percentage\":60}}' | powershell -NoProfile -File \"C:\\\\Users\\\\Yusuf\\\\.claude\\\\statusline.ps1\")",
+      "PowerShell(powershell -NoProfile -Command \"Get-ExecutionPolicy\")",
+      "PowerShell(echo '{\"usage_limits\":{\"five_hour_used_percentage\":35,\"seven_day_used_percentage\":60}}' | powershell -NoProfile -OutputEncoding UTF8 -File \"$env:USERPROFILE\\\\.claude\\\\statusline.ps1\")",
+      "PowerShell($out = echo '{\"usage_limits\":{\"five_hour_used_percentage\":35,\"seven_day_used_percentage\":60}}' | powershell -NoProfile -File \"$env:USERPROFILE\\\\.claude\\\\statusline.ps1\"; Write-Host \"Captured: '$out'\")",
+      "PowerShell(Get-ExecutionPolicy *)",
+      "PowerShell($result = echo '{\"usage_limits\":{\"five_hour_used_percentage\":35,\"seven_day_used_percentage\":60}}' | powershell -NoProfile -File \"C:\\\\Users\\\\Yusuf\\\\.claude\\\\statusline.ps1\" 2>&1; Write-Host \"Exit: $LASTEXITCODE\"; Write-Host \"Output length: $\\($result.Length\\)\"; $result)",
+      "PowerShell(powershell -NoProfile -File \"C:\\\\Users\\\\Yusuf\\\\.claude\\\\statusline.ps1\")",
+      "PowerShell(Receive-Job *)",
+      "PowerShell(echo '{\"usage_limits\":{\"five_hour_used_percentage\":55,\"seven_day_used_percentage\":80}}' | powershell -NoProfile -File \"C:\\\\Users\\\\Yusuf\\\\.claude\\\\statusline.ps1\")",
+      "Bash(npx *)",
+      "Read(//c/Users/Yusuf/.config/ccstatusline/**)",
+      "Read(//c/Users/Yusuf/AppData/Roaming/**)",
+      "Read(//c/Users/Yusuf/**)",
+      "Bash(xargs grep -l \"five-hour\\\\|daily-usage\\\\|context-window\\\\|context-bar\")"
     ]
   }
 }
