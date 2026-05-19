@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { FOUNDATION_PROMPT, MODE_PROMPTS } from '@/lib/prompts/modes';
 import { incrementAI, trackSession } from '@/lib/counters';
 import { sanitizeString } from '@/lib/sanitize';
 import { validateOrigin } from '@/lib/csrf';
+import { deductCredit } from '@/lib/credits';
 
 const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-// In-memory rate limiter — resets on cold start; per-instance in serverless
-const requestCounts: Record<string, { count: number; resetAt: number }> = {};
 
 interface Problem {
   title: string;
@@ -215,22 +215,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (contentLength && parseInt(contentLength) > 51200) {
     return NextResponse.json({ error: 'Request too large' }, { status: 413 });
   }
-  console.log('GROQ key present:', !!process.env.GROQ_API_KEY);
-  const adminToken = request.headers.get('x-admin-token');
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id;
+  if (!session || !userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
   trackSession(ip);
-  if (!adminToken || adminToken !== process.env.ADMIN_PASSWORD) {
-    const now = Date.now();
-    if (!requestCounts[ip]) {
-      requestCounts[ip] = { count: 1, resetAt: now + 60000 };
-    } else if (now > requestCounts[ip].resetAt) {
-      requestCounts[ip] = { count: 1, resetAt: now + 60000 };
-    } else if (requestCounts[ip].count >= 10) {
-      return NextResponse.json({ error: 'Too many requests. Max 10 per minute.' }, { status: 429 });
-    } else {
-      requestCounts[ip].count++;
-    }
-  }
+
+  const isAdmin = (session.user as any)?.isAdmin;
+  let creditResult: Awaited<ReturnType<typeof deductCredit>> | null = null;
 
   let body: {
     message?: string;
@@ -304,6 +299,16 @@ ${MODE_PROMPTS[mode]}
     { role: 'user' as const, content: cleanMessage },
   ];
 
+  if (!isAdmin) {
+    creditResult = await deductCredit(userId);
+    if (!creditResult.ok) {
+      return NextResponse.json(
+        { error: 'No credits remaining', resetAt: creditResult.resetAt },
+        { status: 402 }
+      );
+    }
+  }
+
   try {
     const response = await client.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
@@ -318,6 +323,7 @@ ${MODE_PROMPTS[mode]}
       reply: response.choices[0].message.content,
       mode,
       usage: response.usage,
+      ...(creditResult ? { creditsRemaining: creditResult.remaining } : {}),
     });
   } catch (error) {
     console.error('Chat API error:', error);

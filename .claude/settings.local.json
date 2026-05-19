@@ -33,7 +33,8 @@
       "Bash(xargs grep -l \"five-hour\\\\|daily-usage\\\\|context-window\\\\|context-bar\")",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "PowerShell(New-Item *)"
     ]
   }
 }

@@ -81,3 +81,33 @@ Never commit either file.
 
 - Google Auth is in `views/app/api/auth/[...nextauth]/route.ts`; AuthProvider in `views/components/shared/`
 - Adding a user table column → update both `migrations/schema.sql` and `controllers/api/authController.js`
+- Before every session: read TutorAI-Vault/01-Mistakes.md
+- After every error: write it to TutorAI-Vault/01-Mistakes.md with format:
+  ## [Date] — [Error summary]
+  **Cause:** what caused it
+  **Fix:** what fixed it
+  **Files affected:** which files
+  **Prevention:** how to avoid next time
+- Never make a change that conflicts with a documented mistake in 01-Mistakes.md
+
+---
+
+## Obsidian Vault
+
+A parallel Obsidian vault lives at:
+`TutorAI-Vault/` (same level as TutorAIStack/)
+
+Structure:
+- `TutorAI-Vault/00-Architecture.md` — system design decisions
+- `TutorAI-Vault/01-Mistakes.md` — recurring errors and their fixes
+- `TutorAI-Vault/02-Decisions.md` — why things are built a certain way
+- `TutorAI-Vault/03-ActiveWork.md` — what is currently being built
+
+Before making ANY change:
+1. Read `TutorAI-Vault/01-Mistakes.md`
+2. Check if the change you are about to make matches a known mistake pattern
+3. If it does — follow the documented fix instead
+
+After making ANY change:
+1. If an error occurred during the session, append it to `TutorAI-Vault/01-Mistakes.md`
+2. If a new architectural decision was made, append it to `TutorAI-Vault/02-Decisions.md`

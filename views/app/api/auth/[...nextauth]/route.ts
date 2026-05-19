@@ -77,14 +77,15 @@ export const authOptions: NextAuthOptions = {
             .eq('email', user.email)
             .single();
 
-          if (!existing) {
-            await supabase
+          if (existing) {
+            (user as any).id = String(existing.id);
+          } else {
+            const { data: created } = await supabase
               .from('users')
-              .insert({
-                name: user.name,
-                email: user.email,
-                password_hash: null,
-              });
+              .insert({ name: user.name, email: user.email, password_hash: null })
+              .select('id')
+              .single();
+            if (created) (user as any).id = String(created.id);
           }
         } catch (err) {
           console.error('Google signIn DB error:', err);
@@ -97,12 +98,18 @@ export const authOptions: NextAuthOptions = {
         token.isAdmin = true;
         token.adminToken = process.env.ADMIN_PASSWORD;
       }
+      if (user) {
+        token.userId = (user as any).id;
+      }
       return token;
     },
     async session({ session, token }) {
       if (token.isAdmin) {
         (session.user as any).isAdmin = true;
         (session.user as any).adminToken = token.adminToken;
+      }
+      if (token.userId) {
+        (session.user as any).id = token.userId;
       }
       return session;
     },

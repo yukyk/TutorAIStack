@@ -469,7 +469,6 @@ const LANGUAGES = [
 ];
 
 const AI_MODES = ['hint', 'logic', 'humanize', 'debug', 'optimize'];
-const MAX_FREE_MESSAGES = 15;
 const PROBLEM_KEYS = Object.keys(PROBLEMS);
 
 function getWelcomeMessage(problemTitle) {
@@ -503,8 +502,7 @@ export default function CompilerPage() {
   const [aiMode, setAiMode] = useState('hint');
   const [aiMessage, setAiMessage] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
-  const [messageCount, setMessageCount] = useState(0);
-  const [isLimitReached, setIsLimitReached] = useState(false);
+  const [credits, setCredits] = useState({ daily: 5, dailyLimit: 5, pack: 0, resetAt: null });
   const [aiHistory, setAiHistory] = useState([
     { role: 'assistant', content: getWelcomeMessage(PROBLEMS[initialProblem].title) }
   ]);
@@ -557,7 +555,17 @@ export default function CompilerPage() {
     };
   }, []);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    axios.get('/api/credits/balance')
+      .then(res => setCredits({
+        daily: res.data.dailyCredits,
+        dailyLimit: res.data.dailyLimit,
+        pack: res.data.packCredits,
+        resetAt: res.data.resetAt,
+      }))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -582,8 +590,6 @@ export default function CompilerPage() {
     setProblemId(newId);
     setCode(newProblem.starterCode[language.value]);
     setExecuteResult(null);
-    setMessageCount(0);
-    setIsLimitReached(false);
     setAiMessage('');
     setAiHistory([
       { role: 'assistant', content: getWelcomeMessage(newProblem.title) }
@@ -598,16 +604,10 @@ export default function CompilerPage() {
   }
 
   async function handleAskAI() {
-    if (!aiMessage.trim() || isLimitReached || isStreaming) return;
+    if (!aiMessage.trim() || isPaywalled || isStreaming) return;
 
     const userMsg = aiMessage;
     const currentHistory = aiHistory;
-
-    if (!isAdmin) {
-      const newCount = messageCount + 1;
-      setMessageCount(newCount);
-      if (newCount >= MAX_FREE_MESSAGES) setIsLimitReached(true);
-    }
 
     setAiMessage('');
     setAiLoading(true);
@@ -624,6 +624,9 @@ export default function CompilerPage() {
       }, { headers });
 
       const fullText = res.data.reply;
+      if (res.data.creditsRemaining) {
+        setCredits(prev => ({ ...prev, daily: res.data.creditsRemaining.daily, pack: res.data.creditsRemaining.pack }));
+      }
       setAiLoading(false);
       setIsStreaming(true);
       setStreamingContent('');
@@ -641,7 +644,15 @@ export default function CompilerPage() {
       }, 18);
 
     } catch (err) {
-      console.error(err);
+      if (err.response?.status === 402) {
+        setCredits(prev => ({
+          ...prev,
+          daily: 0,
+          pack: 0,
+          ...(err.response.data?.resetAt ? { resetAt: err.response.data.resetAt } : {}),
+        }));
+        setAiHistory(prev => prev.slice(0, -1));
+      }
       setAiLoading(false);
     }
   }
@@ -666,11 +677,10 @@ export default function CompilerPage() {
     }
   }
 
-  const messagesLeft = MAX_FREE_MESSAGES - messageCount;
-  const progressPercent = (messageCount / MAX_FREE_MESSAGES) * 100;
-  const progressColor = progressPercent >= 100 ? '#ef4444'
-    : progressPercent >= 70 ? '#f97316'
-    : '#3B82F6';
+  const isPaywalled = credits.daily === 0 && credits.pack === 0;
+  const dailyUsed = credits.dailyLimit - credits.daily;
+  const progressPercent = Math.min((dailyUsed / credits.dailyLimit) * 100, 100);
+  const progressColor = credits.daily === 0 ? '#ef4444' : credits.daily <= 1 ? '#f97316' : '#3B82F6';
 
   const avatarInitial = session?.user?.name?.[0]?.toUpperCase()
     || session?.user?.email?.[0]?.toUpperCase()
@@ -945,27 +955,40 @@ export default function CompilerPage() {
               {/* Progress + input */}
               <div style={{ padding: '10px 14px', borderTop: '1px solid #1e1e1e', flexShrink: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '9px' }}>
-                  <span style={{ fontSize: '11px', color: '#3f3f46' }}>{messagesLeft} messages left</span>
+                  <span style={{ fontSize: '11px', color: '#3f3f46' }}>
+                    {credits.daily} daily{credits.pack > 0 ? ` + ${credits.pack} pack` : ''} left
+                  </span>
                   <div style={{ height: '2px', width: '72px', background: 'rgba(255,255,255,0.08)', borderRadius: '1px', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${progressPercent}%`, background: progressColor, borderRadius: '1px', transition: 'all 0.3s ease' }} />
                   </div>
                 </div>
 
-                {isLimitReached ? (
+                {isPaywalled ? (
                   <div style={{ background: '#0d1117', border: '1px solid #1e1e1e', borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
                     <p style={{ fontSize: '13px', fontWeight: '600', color: '#f4f4f5', margin: '0 0 4px' }}>
-                      You've used your {MAX_FREE_MESSAGES} free messages
+                      No credits remaining
                     </p>
                     <p style={{ fontSize: '12px', color: '#52525b', margin: '0 0 12px' }}>
-                      Upgrade to Pro for unlimited access
+                      {credits.resetAt
+                        ? `Resets in ~${Math.max(1, Math.ceil((new Date(credits.resetAt) - new Date()) / 3600000))}h`
+                        : 'Daily credits reset every 24 hours'}
                     </p>
-                    <button style={{
-                      background: '#3B82F6', color: '#fff', border: 'none',
-                      borderRadius: '6px', padding: '9px 20px', fontSize: '13px',
-                      fontWeight: '600', cursor: 'not-allowed', opacity: 0.65, width: '100%',
-                    }}>
-                      Upgrade to Pro — Coming Soon
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button style={{
+                        flex: 1, background: '#18181b', color: '#71717a',
+                        border: '1px solid #27272a', borderRadius: '6px',
+                        padding: '8px 12px', fontSize: '12px', fontWeight: '600', cursor: 'not-allowed',
+                      }}>
+                        Buy Credits — Soon
+                      </button>
+                      <button style={{
+                        flex: 1, background: '#3B82F6', color: '#fff', border: 'none',
+                        borderRadius: '6px', padding: '8px 12px', fontSize: '12px',
+                        fontWeight: '600', cursor: 'not-allowed', opacity: 0.65,
+                      }}>
+                        Subscribe — Soon
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', gap: '7px' }}>
