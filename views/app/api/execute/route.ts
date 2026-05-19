@@ -109,6 +109,7 @@ interface ProblemTest {
   func: { py: string; js: string };
   cases: TestCase[];
   linkedList?: boolean;
+  linkedListInputOnly?: boolean;
   binaryTree?: boolean;
 }
 
@@ -202,23 +203,67 @@ const PROBLEM_TESTS: Record<string, ProblemTest> = {
     ],
     binaryTree: true,
   },
+  contains_duplicate: {
+    func: { py: 'containsDuplicate', js: 'containsDuplicate' },
+    cases: [
+      { args: [[1,2,3,1]],               expected: true,  label: 'nums=[1,2,3,1]' },
+      { args: [[1,2,3,4]],               expected: false, label: 'nums=[1,2,3,4]' },
+      { args: [[1,1,1,3,3,4,3,2,4,2]],   expected: true,  label: 'nums=[1,1,1,3,3,4,3,2,4,2]' },
+      { args: [[1]],                     expected: false, label: 'nums=[1]', isEdgeCase: true },
+    ],
+  },
+  maximum_depth_binary_tree: {
+    func: { py: 'maxDepth', js: 'maxDepth' },
+    cases: [
+      { args: [[3,9,20,null,null,15,7]], expected: 3, label: 'root=[3,9,20,null,null,15,7]' },
+      { args: [[1,null,2]],              expected: 2, label: 'root=[1,null,2]' },
+      { args: [[]],                      expected: 0, label: 'root=[]', isEdgeCase: true },
+    ],
+    binaryTree: true,
+  },
+  linked_list_cycle: {
+    func: { py: 'hasCycle', js: 'hasCycle' },
+    cases: [
+      { args: [[1,2,3]], expected: false, label: 'no cycle [1,2,3]' },
+      { args: [[1]],     expected: false, label: 'no cycle [1]' },
+      { args: [[]],      expected: false, label: 'empty list []', isEdgeCase: true },
+    ],
+    linkedListInputOnly: true,
+  },
+  find_minimum_rotated: {
+    func: { py: 'findMin', js: 'findMin' },
+    cases: [
+      { args: [[3,4,5,1,2]],     expected: 1,  label: 'nums=[3,4,5,1,2]' },
+      { args: [[4,5,6,7,0,1,2]], expected: 0,  label: 'nums=[4,5,6,7,0,1,2]' },
+      { args: [[11,13,15,17]],   expected: 11, label: 'nums=[11,13,15,17]' },
+      { args: [[1]],             expected: 1,  label: 'nums=[1]', isEdgeCase: true },
+    ],
+  },
+  product_except_self: {
+    func: { py: 'productExceptSelf', js: 'productExceptSelf' },
+    cases: [
+      { args: [[1,2,3,4]],       expected: [24,12,8,6], label: 'nums=[1,2,3,4]' },
+      { args: [[-1,1,0,-3,3]],   expected: [0,0,9,0,0], label: 'nums=[-1,1,0,-3,3]' },
+      { args: [[0,0]],           expected: [0,0],        label: 'nums=[0,0]', isEdgeCase: true },
+    ],
+  },
 };
 
 function buildPythonHarness(
   userCode: string,
   funcName: string,
   cases: TestCase[],
-  opts: { linkedList?: boolean; binaryTree?: boolean } = {}
+  opts: { linkedList?: boolean; linkedListInputOnly?: boolean; binaryTree?: boolean } = {}
 ): string {
-  const { linkedList, binaryTree } = opts;
+  const { linkedList, linkedListInputOnly, binaryTree } = opts;
   let helpers = '';
   let preprocess = '';
   let postprocess = '';
 
-  if (linkedList) {
+  if (linkedList || linkedListInputOnly) {
     helpers = PY_LINKED_LIST_HELPERS;
     preprocess = '        __a[0] = __arr_to_list(__a[0])';
-    postprocess = '        __r = __list_to_arr(__r)';
+    if (linkedList) postprocess = '        __r = __list_to_arr(__r)';
   } else if (binaryTree) {
     helpers = PY_TREE_HELPERS;
     preprocess = '        __a[0] = __arr_to_tree(__a[0])';
@@ -260,17 +305,17 @@ function buildJSHarness(
   userCode: string,
   funcName: string,
   cases: TestCase[],
-  opts: { linkedList?: boolean; binaryTree?: boolean } = {}
+  opts: { linkedList?: boolean; linkedListInputOnly?: boolean; binaryTree?: boolean } = {}
 ): string {
-  const { linkedList, binaryTree } = opts;
+  const { linkedList, linkedListInputOnly, binaryTree } = opts;
   let helpers = '';
   let preprocess = '';
   let postprocess = '';
 
-  if (linkedList) {
+  if (linkedList || linkedListInputOnly) {
     helpers = JS_LINKED_LIST_HELPERS;
     preprocess = '    __a[0] = __arrToList(__a[0]);';
-    postprocess = '    __r = __listToArr(__r);';
+    if (linkedList) postprocess = '    __r = __listToArr(__r);';
   } else if (binaryTree) {
     helpers = JS_TREE_HELPERS;
     preprocess = '    __a[0] = __arrToTree(__a[0]);';
@@ -306,6 +351,11 @@ console.log(JSON.stringify(__out));`;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > 51200) {
+    return NextResponse.json({ error: 'Request too large' }, { status: 413 });
+  }
+
   let body: { code?: string; language?: string; problemId?: string };
   try {
     body = await request.json();
@@ -330,7 +380,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   if (testData && (language === 'python' || language === 'javascript')) {
     const funcName = language === 'python' ? testData.func.py : testData.func.js;
-    const opts = { linkedList: !!testData.linkedList, binaryTree: !!testData.binaryTree };
+    const opts = { linkedList: !!testData.linkedList, linkedListInputOnly: !!testData.linkedListInputOnly, binaryTree: !!testData.binaryTree };
     runCode = language === 'python'
       ? buildPythonHarness(code, funcName, testData.cases, opts)
       : buildJSHarness(code, funcName, testData.cases, opts);

@@ -10,5 +10,5 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: ['/compiler/:path*', '/onboarding/:path*'],
+  matcher: ['/compiler/:path*', '/onboarding/:path*', '/admin/:path*'],
 };

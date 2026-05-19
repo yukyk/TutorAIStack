@@ -13,8 +13,8 @@ export default function Hero() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-24 pb-16 overflow-hidden">
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-electric-blue/20 rounded-full blur-[120px] -z-10 mix-blend-screen animate-pulse-glow" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-blue/30 rounded-full blur-[120px] -z-10 mix-blend-screen animate-pulse-glow" style={{ animationDelay: "2s" }} />
+      <div className="hidden md:block absolute top-1/4 left-1/4 w-96 h-96 bg-electric-blue/20 rounded-full blur-[120px] -z-10 mix-blend-screen animate-pulse-glow" />
+      <div className="hidden md:block absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-blue/30 rounded-full blur-[120px] -z-10 mix-blend-screen animate-pulse-glow" style={{ animationDelay: "2s" }} />
 
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
 
@@ -58,7 +58,7 @@ export default function Hero() {
         </div>
 
         {/* Right Column */}
-        <div className="relative animate-float">
+        <div className="relative animate-float" style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
           <div className="glass-card rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative z-10">
             <div className="bg-black/40 px-4 py-3 border-b border-white/10 flex items-center gap-2">
               <div className="flex gap-1.5">

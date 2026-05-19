@@ -1,13 +1,21 @@
 import Hero from '@/components/landing/Hero';
 import Features from '@/components/landing/Features';
 import HowItWorks from '@/components/landing/HowItWorks';
-import Demo from '@/components/landing/Demo';
-import RoadmapTimeline from '@/components/landing/RoadmapTimeline';
 import Pricing from '@/components/landing/Pricing';
-import SocialProof from '@/components/landing/SocialProof';
 import FinalCTA from '@/components/landing/FinalCTA';
 import Footer from '@/components/shared/Footer';
 import Navbar from '@/components/shared/Navbar';
+import dynamic from 'next/dynamic';
+
+const Demo = dynamic(() => import('@/components/landing/Demo'), {
+  loading: () => <div style={{ height: '400px' }} />,
+});
+const RoadmapTimeline = dynamic(() => import('@/components/landing/RoadmapTimeline'), {
+  loading: () => <div style={{ height: '400px' }} />,
+});
+const SocialProof = dynamic(() => import('@/components/landing/SocialProof'), {
+  loading: () => <div style={{ height: '300px' }} />,
+});
 
 export default function HomePage() {
   return (

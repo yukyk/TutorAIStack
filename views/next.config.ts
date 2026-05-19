@@ -4,6 +4,11 @@ import path from 'path';
 const nextConfig: NextConfig = {
   serverExternalPackages: ['bcryptjs'],
   turbopack: {},
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50kb',
+    },
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,

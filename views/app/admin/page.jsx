@@ -282,6 +282,58 @@ export default function AdminPage() {
           </div>
         </Card>
 
+        <Card title="Security">
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ color: '#6b7280', fontSize: 12, marginBottom: 4 }}>Locked accounts</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                color: stats.security?.lockedAccounts > 0 ? '#f87171' : '#f9fafb',
+                fontSize: 32, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1,
+              }}>
+                {stats.security?.lockedAccounts ?? 0}
+              </div>
+              {stats.security?.lockedAccounts > 0 && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+                  background: '#3a0a0a', color: '#f87171',
+                  padding: '3px 8px', borderRadius: 4, textTransform: 'uppercase',
+                }}>
+                  Active
+                </span>
+              )}
+            </div>
+          </div>
+          <div>
+            <div style={{ color: '#6b7280', fontSize: 12, marginBottom: 8 }}>Recent failed attempts</div>
+            {(!stats.security?.recentFailedAttempts || stats.security.recentFailedAttempts.length === 0) ? (
+              <div style={{ color: '#374151', fontSize: 12 }}>No failed attempts</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {stats.security.recentFailedAttempts.map((a, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    background: '#0d1117', padding: '6px 10px', borderRadius: 6,
+                  }}>
+                    <span style={{ color: '#93c5fd', fontSize: 12, fontFamily: 'monospace' }}>{a.email}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ color: '#9ca3af', fontSize: 11, fontFamily: 'monospace' }}>
+                        {a.attempts} {a.attempts === 1 ? 'try' : 'tries'}
+                      </span>
+                      {a.locked && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 700,
+                          background: '#3a0a0a', color: '#f87171',
+                          padding: '2px 6px', borderRadius: 4,
+                        }}>LOCKED</span>
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Card>
+
         <Card title="SEO Controls" fullWidth>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>

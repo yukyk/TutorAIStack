@@ -81,48 +81,58 @@ export default function Navbar() {
           )}
         </div>
 
-        <button onClick={() => setOpen(!open)} className="md:hidden text-white/60">
+        <button onClick={() => setOpen(!open)} className="md:hidden text-white/60" style={{ touchAction: 'manipulation', cursor: 'pointer' }}>
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
       {/* Mobile menu */}
-      {open && (
-        <div className="md:hidden bg-[#0B0F19] border-t border-white/5 px-6 py-4 flex flex-col gap-4">
-          {NAV_LINKS.map(l => (
-            <a key={l.label} href={l.href} onClick={e => scrollTo(e, l.href)} className="text-sm text-white/60 hover:text-white">
-              {l.label}
+      <div
+        className="md:hidden bg-[#0B0F19] border-t border-white/5 px-6 py-4 flex flex-col gap-4"
+        style={{
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? 'auto' : 'none',
+          transform: open ? 'translateY(0)' : 'translateY(-8px)',
+          transition: 'opacity 0.15s ease, transform 0.15s ease',
+          position: 'absolute',
+          top: '64px',
+          left: 0,
+          right: 0,
+        }}
+      >
+        {NAV_LINKS.map(l => (
+          <a key={l.label} href={l.href} onClick={e => scrollTo(e, l.href)} className="text-sm text-white/60 hover:text-white">
+            {l.label}
+          </a>
+        ))}
+        {session ? (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <img
+                src={session.user?.image || '/default-avatar.png'}
+                alt={session.user?.name ?? ''}
+                className="w-8 h-8 rounded-full border border-white/20"
+              />
+              <span className="text-sm text-white/80">{session.user?.name?.split(' ')[0]}</span>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="text-sm text-white/40 hover:text-white transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <a href="/login" className="text-sm text-white/60 hover:text-white transition-colors text-center py-2">
+              Log in
             </a>
-          ))}
-          {session ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <img
-                  src={session.user?.image || '/default-avatar.png'}
-                  alt={session.user?.name ?? ''}
-                  className="w-8 h-8 rounded-full border border-white/20"
-                />
-                <span className="text-sm text-white/80">{session.user?.name?.split(' ')[0]}</span>
-              </div>
-              <button
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className="text-sm text-white/40 hover:text-white transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <a href="/login" className="text-sm text-white/60 hover:text-white transition-colors text-center py-2">
-                Log in
-              </a>
-              <a href="/signup" className="bg-electric-blue text-white px-5 py-2 rounded-full text-sm font-semibold text-center">
-                Sign up free
-              </a>
-            </div>
-          )}
-        </div>
-      )}
+            <a href="/signup" className="bg-electric-blue text-white px-5 py-2 rounded-full text-sm font-semibold text-center">
+              Sign up free
+            </a>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }

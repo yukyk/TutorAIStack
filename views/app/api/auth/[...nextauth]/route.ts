@@ -4,6 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import type { NextAuthOptions } from 'next-auth';
 import bcrypt from 'bcryptjs';
 import supabase from '@/lib/db';
+import { checkLoginAttempts, recordFailedLogin, recordSuccessfulLogin } from '@/lib/counters';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -26,10 +27,17 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        const lockCheck = checkLoginAttempts(credentials.email);
+        if (!lockCheck.allowed) {
+          const minutes = Math.ceil((lockCheck.remainingMs || 0) / 60000);
+          throw new Error(`Account locked. Try again in ${minutes} minutes.`);
+        }
+
         if (
           credentials.email === process.env.ADMIN_EMAIL &&
           credentials.password === process.env.ADMIN_PASSWORD
         ) {
+          recordSuccessfulLogin(credentials.email);
           return { id: 'admin', email: credentials.email, name: 'Admin', isAdmin: true } as any;
         }
 
@@ -39,11 +47,18 @@ export const authOptions: NextAuthOptions = {
           .eq('email', credentials.email)
           .single();
 
-        if (!user?.password_hash) return null;
+        if (!user?.password_hash) {
+          recordFailedLogin(credentials.email);
+          return null;
+        }
 
         const valid = await bcrypt.compare(credentials.password, user.password_hash);
-        if (!valid) return null;
+        if (!valid) {
+          recordFailedLogin(credentials.email);
+          return null;
+        }
 
+        recordSuccessfulLogin(credentials.email);
         return { id: String(user.id), email: user.email, name: user.name };
       },
     }),

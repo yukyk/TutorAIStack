@@ -122,6 +122,9 @@ export default function SignupPage() {
               onFocus={e => (e.target.style.borderColor = '#3B82F6')}
               onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
             />
+            <p style={{ color: '#6b7280', fontSize: '12px', margin: '-4px 0 0', lineHeight: '1.4' }}>
+              Min 8 characters, one uppercase letter, one number
+            </p>
 
             {error && <p style={{ color: '#f87171', fontSize: '13px', margin: 0 }}>{error}</p>}
 

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { FOUNDATION_PROMPT, MODE_PROMPTS } from '@/lib/prompts/modes';
 import { incrementAI, trackSession } from '@/lib/counters';
+import { sanitizeString } from '@/lib/sanitize';
+import { validateOrigin } from '@/lib/csrf';
 
 const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -116,6 +118,51 @@ characters within a string.`,
       'children', 'depth', 'width', 'traversal', 'root', 'code', 'debug', 'error',
       'hint', 'help', 'stuck', 'confused', 'why', 'how', 'what', 'explain', 'understand', 'approach'],
   },
+  contains_duplicate: {
+    title: 'Contains Duplicate',
+    description: `Given an integer array nums, return true if any value appears at least twice in the array, and return false if every element is distinct.`,
+    example: 'Input: nums=[1,2,3,1] → Output: true\nInput: nums=[1,2,3,4] → Output: false',
+    constraints: '1 <= nums.length <= 10^5. -10^9 <= nums[i] <= 10^9.',
+    topics: ['duplicate', 'array', 'hash', 'set', 'unique', 'distinct', 'repeat', 'contains',
+      'count', 'frequency', 'check', 'value', 'element', 'code', 'debug', 'error',
+      'hint', 'help', 'stuck', 'confused', 'why', 'how', 'what', 'explain', 'understand', 'approach'],
+  },
+  maximum_depth_binary_tree: {
+    title: 'Maximum Depth of Binary Tree',
+    description: `Given the root of a binary tree, return its maximum depth. The maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.`,
+    example: 'Input: root=[3,9,20,null,null,15,7] → Output: 3\nInput: root=[1,null,2] → Output: 2',
+    constraints: '0 <= number of nodes <= 10^4. -100 <= Node.val <= 100.',
+    topics: ['binary tree', 'tree', 'depth', 'height', 'recursion', 'dfs', 'bfs', 'root', 'leaf',
+      'left', 'right', 'node', 'level', 'traversal', 'max', 'longest', 'path', 'code', 'debug',
+      'error', 'hint', 'help', 'stuck', 'confused', 'why', 'how', 'what', 'explain', 'understand', 'approach'],
+  },
+  linked_list_cycle: {
+    title: 'Linked List Cycle',
+    description: `Given head, the head of a linked list, determine if the linked list has a cycle in it. Return true if there is a cycle, otherwise return false.`,
+    example: 'Input: head=[3,2,0,-4], pos=1 → Output: true\nInput: head=[1], pos=-1 → Output: false',
+    constraints: '0 <= number of nodes <= 10^4. -10^5 <= Node.val <= 10^5.',
+    topics: ['linked list', 'cycle', 'loop', 'pointer', 'fast', 'slow', 'tortoise', 'hare',
+      'floyd', 'node', 'next', 'head', 'detect', 'visited', 'set', 'code', 'debug', 'error',
+      'hint', 'help', 'stuck', 'confused', 'why', 'how', 'what', 'explain', 'understand', 'approach'],
+  },
+  find_minimum_rotated: {
+    title: 'Find Minimum in Rotated Sorted Array',
+    description: `Suppose an array of length n sorted in ascending order is rotated between 1 and n times. Given the sorted rotated array nums of unique elements, return the minimum element of this array. You must write an algorithm that runs in O(log n) time.`,
+    example: 'Input: nums=[3,4,5,1,2] → Output: 1\nInput: nums=[4,5,6,7,0,1,2] → Output: 0',
+    constraints: '1 <= nums.length <= 5000. -5000 <= nums[i] <= 5000. All integers unique.',
+    topics: ['rotated', 'sorted', 'binary search', 'minimum', 'min', 'pivot', 'array', 'mid',
+      'left', 'right', 'pointer', 'logarithmic', 'o(log n)', 'divide', 'half', 'code', 'debug',
+      'error', 'hint', 'help', 'stuck', 'confused', 'why', 'how', 'what', 'explain', 'understand', 'approach'],
+  },
+  product_except_self: {
+    title: 'Product of Array Except Self',
+    description: `Given an integer array nums, return an array answer such that answer[i] is equal to the product of all the elements of nums except nums[i]. You must write an algorithm that runs in O(n) time and without using the division operation.`,
+    example: 'Input: nums=[1,2,3,4] → Output: [24,12,8,6]\nInput: nums=[-1,1,0,-3,3] → Output: [0,0,9,0,0]',
+    constraints: '2 <= nums.length <= 10^5. -30 <= nums[i] <= 30.',
+    topics: ['product', 'array', 'prefix', 'suffix', 'left', 'right', 'multiply', 'except',
+      'self', 'division', 'zero', 'o(n)', 'space', 'answer', 'result', 'code', 'debug', 'error',
+      'hint', 'help', 'stuck', 'confused', 'why', 'how', 'what', 'explain', 'understand', 'approach'],
+  },
 };
 
 function isMessageOffTopic(message: string, problem: Problem): boolean {
@@ -159,11 +206,15 @@ function isMessageOffTopic(message: string, problem: Problem): boolean {
   return !problem.topics.some(topic => msg.includes(topic));
 }
 
-function stripHtml(str: string): string {
-  return str.replace(/<[^>]*>/g, '');
-}
-
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  if (!validateOrigin(request)) {
+    return NextResponse.json({ error: 'Invalid origin' }, { status: 403 });
+  }
+
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > 51200) {
+    return NextResponse.json({ error: 'Request too large' }, { status: 413 });
+  }
   console.log('GROQ key present:', !!process.env.GROQ_API_KEY);
   const adminToken = request.headers.get('x-admin-token');
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
@@ -200,17 +251,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const { message, mode, problemId, history, userCode } = body;
 
-  const cleanMessage = message ? stripHtml(message).trim() : undefined;
-  const cleanCode = userCode ? stripHtml(userCode).trim() : undefined;
+  const cleanMessage = message ? sanitizeString(message, 2000) : undefined;
+  const cleanCode = userCode ? sanitizeString(userCode, 10000) : undefined;
 
   if (!cleanMessage || !mode || !problemId) {
     return NextResponse.json({ error: 'message, mode, and problemId are required' }, { status: 400 });
-  }
-  if (cleanMessage.length > 2000) {
-    return NextResponse.json({ error: 'Message exceeds 2000 character limit.' }, { status: 400 });
-  }
-  if (cleanCode && cleanCode.length > 10000) {
-    return NextResponse.json({ error: 'Code exceeds 10000 character limit.' }, { status: 400 });
   }
 
   if (!MODE_PROMPTS[mode]) {

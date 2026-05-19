@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
 @theme {
   --color-background: #0B0F19;
   --color-foreground: #FFFFFF;
@@ -18,7 +27,11 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), sans-serif;
-  scroll-behavior: smooth;
+  overscroll-behavior: none;
+}
+
+img {
+  content-visibility: auto;
 }
 
 /* Glassmorphism utilities */
@@ -64,4 +77,13 @@ body {
 
 .animate-pulse-glow {
   animation: pulse-glow 4s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+  .animate-float {
+    animation: none !important;
+  }
+  .animate-pulse-glow {
+    animation: none !important;
+  }
 }

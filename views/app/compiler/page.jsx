@@ -294,6 +294,171 @@ const PROBLEMS = {
       cpp: '// struct TreeNode { int val; TreeNode *left, *right; TreeNode(int x) : val(x), left(nullptr), right(nullptr) {} };\nclass Solution {\npublic:\n    vector<vector<int>> levelOrder(TreeNode* root) {\n        // Write your solution here\n    }\n};',
     },
   },
+
+  contains_duplicate: {
+    id: 'contains_duplicate',
+    title: 'Contains Duplicate',
+    difficulty: 'Easy',
+    difficultyColor: '#4ade80',
+    difficultyBg: '#1a3a1a',
+    description: 'Given an integer array nums, return true if any value appears at least twice in the array, and return false if every element is distinct.',
+    examples: [
+      { input: 'nums = [1,2,3,1]', output: 'true' },
+      { input: 'nums = [1,2,3,4]', output: 'false' },
+      { input: 'nums = [1,1,1,3,3,4,3,2,4,2]', output: 'true' },
+    ],
+    edgeCases: [
+      'What if the array has only one element?',
+      'What if the array is empty?',
+    ],
+    constraints: [
+      '1 <= nums.length <= 10^5',
+      '-10^9 <= nums[i] <= 10^9',
+    ],
+    starterCode: {
+      python: 'def containsDuplicate(nums):\n    # Write your solution here\n    pass',
+      javascript: 'function containsDuplicate(nums) {\n    // Write your solution here\n}',
+      java: 'class Solution {\n    public boolean containsDuplicate(int[] nums) {\n        // Write your solution here\n    }\n}',
+      cpp: 'class Solution {\npublic:\n    bool containsDuplicate(vector<int>& nums) {\n        // Write your solution here\n    }\n};',
+    },
+    testCases: [
+      { label: 'Case 1', displayInput: 'nums=[1,2,3,1]', expected: 'true' },
+      { label: 'Case 2', displayInput: 'nums=[1,2,3,4]', expected: 'false' },
+      { label: 'Edge Case', displayInput: 'nums=[1]', expected: 'false', isEdgeCase: true },
+    ],
+  },
+
+  maximum_depth_binary_tree: {
+    id: 'maximum_depth_binary_tree',
+    title: 'Maximum Depth of Binary Tree',
+    difficulty: 'Easy',
+    difficultyColor: '#4ade80',
+    difficultyBg: '#1a3a1a',
+    description: 'Given the root of a binary tree, return its maximum depth. The maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.',
+    examples: [
+      { input: 'root = [3,9,20,null,null,15,7]', output: '3' },
+      { input: 'root = [1,null,2]', output: '2' },
+    ],
+    edgeCases: [
+      'What if the tree is empty (root is null)?',
+      'What if the tree has only one node?',
+    ],
+    constraints: [
+      '0 <= number of nodes <= 10^4',
+      '-100 <= Node.val <= 100',
+    ],
+    starterCode: {
+      python: 'def maxDepth(root):\n    # Write your solution here\n    pass',
+      javascript: 'function maxDepth(root) {\n    // Write your solution here\n}',
+      java: 'class Solution {\n    public int maxDepth(TreeNode root) {\n        // Write your solution here\n    }\n}',
+      cpp: 'class Solution {\npublic:\n    int maxDepth(TreeNode* root) {\n        // Write your solution here\n    }\n};',
+    },
+    testCases: [
+      { label: 'Case 1', displayInput: 'root=[3,9,20,null,null,15,7]', expected: '3' },
+      { label: 'Case 2', displayInput: 'root=[1,null,2]', expected: '2' },
+      { label: 'Edge Case', displayInput: 'root=[]', expected: '0', isEdgeCase: true },
+    ],
+  },
+
+  linked_list_cycle: {
+    id: 'linked_list_cycle',
+    title: 'Linked List Cycle',
+    difficulty: 'Easy',
+    difficultyColor: '#4ade80',
+    difficultyBg: '#1a3a1a',
+    description: 'Given head, the head of a linked list, determine if the linked list has a cycle in it. Return true if there is a cycle, otherwise return false.',
+    examples: [
+      { input: 'head = [3,2,0,-4], pos = 1', output: 'true' },
+      { input: 'head = [1,2], pos = 0', output: 'true' },
+      { input: 'head = [1], pos = -1', output: 'false' },
+    ],
+    edgeCases: [
+      'What if the list has only one node with no cycle?',
+      'What if the list is empty?',
+    ],
+    constraints: [
+      '0 <= number of nodes <= 10^4',
+      '-10^5 <= Node.val <= 10^5',
+    ],
+    starterCode: {
+      python: 'def hasCycle(head):\n    # Write your solution here\n    pass',
+      javascript: 'function hasCycle(head) {\n    // Write your solution here\n}',
+      java: 'class Solution {\n    public boolean hasCycle(ListNode head) {\n        // Write your solution here\n    }\n}',
+      cpp: 'class Solution {\npublic:\n    bool hasCycle(ListNode *head) {\n        // Write your solution here\n    }\n};',
+    },
+    testCases: [
+      { label: 'Case 1', displayInput: 'no cycle [1,2,3]', expected: 'false' },
+      { label: 'Case 2', displayInput: 'no cycle [1]', expected: 'false' },
+      { label: 'Edge Case', displayInput: 'empty list []', expected: 'false', isEdgeCase: true },
+    ],
+  },
+
+  find_minimum_rotated: {
+    id: 'find_minimum_rotated',
+    title: 'Find Minimum in Rotated Sorted Array',
+    difficulty: 'Medium',
+    difficultyColor: '#fbbf24',
+    difficultyBg: '#2a1f00',
+    description: 'Suppose an array of length n sorted in ascending order is rotated between 1 and n times. Given the sorted rotated array nums of unique elements, return the minimum element of this array. You must write an algorithm that runs in O(log n) time.',
+    examples: [
+      { input: 'nums = [3,4,5,1,2]', output: '1' },
+      { input: 'nums = [4,5,6,7,0,1,2]', output: '0' },
+      { input: 'nums = [11,13,15,17]', output: '11' },
+    ],
+    edgeCases: [
+      'What if the array was not rotated at all?',
+      'What if the array has only one element?',
+    ],
+    constraints: [
+      '1 <= nums.length <= 5000',
+      '-5000 <= nums[i] <= 5000',
+      'All integers are unique',
+    ],
+    starterCode: {
+      python: 'def findMin(nums):\n    # Write your solution here\n    pass',
+      javascript: 'function findMin(nums) {\n    // Write your solution here\n}',
+      java: 'class Solution {\n    public int findMin(int[] nums) {\n        // Write your solution here\n    }\n}',
+      cpp: 'class Solution {\npublic:\n    int findMin(vector<int>& nums) {\n        // Write your solution here\n    }\n};',
+    },
+    testCases: [
+      { label: 'Case 1', displayInput: 'nums=[3,4,5,1,2]', expected: '1' },
+      { label: 'Case 2', displayInput: 'nums=[4,5,6,7,0,1,2]', expected: '0' },
+      { label: 'Edge Case', displayInput: 'nums=[1]', expected: '1', isEdgeCase: true },
+    ],
+  },
+
+  product_except_self: {
+    id: 'product_except_self',
+    title: 'Product of Array Except Self',
+    difficulty: 'Medium',
+    difficultyColor: '#fbbf24',
+    difficultyBg: '#2a1f00',
+    description: 'Given an integer array nums, return an array answer such that answer[i] is equal to the product of all the elements of nums except nums[i]. You must write an algorithm that runs in O(n) time and without using the division operation.',
+    examples: [
+      { input: 'nums = [1,2,3,4]', output: '[24,12,8,6]' },
+      { input: 'nums = [-1,1,0,-3,3]', output: '[0,0,9,0,0]' },
+    ],
+    edgeCases: [
+      'What if the array contains a zero?',
+      'What if the array contains two zeros?',
+    ],
+    constraints: [
+      '2 <= nums.length <= 10^5',
+      '-30 <= nums[i] <= 30',
+      'The product of any prefix or suffix fits in a 32-bit integer',
+    ],
+    starterCode: {
+      python: 'def productExceptSelf(nums):\n    # Write your solution here\n    pass',
+      javascript: 'function productExceptSelf(nums) {\n    // Write your solution here\n}',
+      java: 'class Solution {\n    public int[] productExceptSelf(int[] nums) {\n        // Write your solution here\n    }\n}',
+      cpp: 'class Solution {\npublic:\n    vector<int> productExceptSelf(vector<int>& nums) {\n        // Write your solution here\n    }\n};',
+    },
+    testCases: [
+      { label: 'Case 1', displayInput: 'nums=[1,2,3,4]', expected: '[24,12,8,6]' },
+      { label: 'Case 2', displayInput: 'nums=[-1,1,0,-3,3]', expected: '[0,0,9,0,0]' },
+      { label: 'Edge Case', displayInput: 'nums=[0,0]', expected: '[0,0]', isEdgeCase: true },
+    ],
+  },
 };
 
 const LANGUAGES = [
@@ -327,21 +492,29 @@ export default function CompilerPage() {
   const isAdmin = session?.user?.isAdmin;
   const adminToken = session?.user?.adminToken;
 
-  const [problemId, setProblemId] = useState('two_sum');
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const initialProblem = searchParams?.get('problem') && PROBLEMS[searchParams.get('problem')]
+    ? searchParams.get('problem')
+    : 'two_sum';
+
+  const [problemId, setProblemId] = useState(initialProblem);
   const [language, setLanguage] = useState(LANGUAGES[0]);
-  const [code, setCode] = useState(PROBLEMS['two_sum'].starterCode['python']);
+  const [code, setCode] = useState(PROBLEMS[initialProblem].starterCode['python']);
   const [aiMode, setAiMode] = useState('hint');
   const [aiMessage, setAiMessage] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [messageCount, setMessageCount] = useState(0);
   const [isLimitReached, setIsLimitReached] = useState(false);
   const [aiHistory, setAiHistory] = useState([
-    { role: 'assistant', content: getWelcomeMessage(PROBLEMS['two_sum'].title) }
+    { role: 'assistant', content: getWelcomeMessage(PROBLEMS[initialProblem].title) }
   ]);
   const [streamingContent, setStreamingContent] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [executeResult, setExecuteResult] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [copied, setCopied] = useState(false);
   const chatEndRef = useRef(null);
 
   const [leftTab, setLeftTab] = useState('description');
@@ -383,6 +556,22 @@ export default function CompilerPage() {
       document.removeEventListener('mouseup', onMouseUp);
     };
   }, []);
+
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  function handleShare() {
+    const url = `${window.location.origin}/compiler?problem=${problemId}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const problem = PROBLEMS[problemId];
   const problemNumber = PROBLEM_KEYS.indexOf(problemId) + 1;
@@ -487,6 +676,37 @@ export default function CompilerPage() {
     || session?.user?.email?.[0]?.toUpperCase()
     || null;
 
+  if (!mounted) {
+    return (
+      <div style={{
+        display: 'flex', height: '100vh', background: '#0B0F19',
+        alignItems: 'center', justifyContent: 'center',
+        color: '#3f3f46', fontSize: '14px', fontFamily: 'system-ui',
+      }}>
+        Loading TutorAI...
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 9999, background: '#0B0F19',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', padding: '32px', textAlign: 'center',
+      }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>💻</div>
+        <h2 style={{ color: '#fff', fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>
+          Desktop Required
+        </h2>
+        <p style={{ color: '#71717a', fontSize: '14px', lineHeight: '1.6', maxWidth: '280px' }}>
+          TutorAI works best on a desktop or laptop. Mobile support is coming soon.
+        </p>
+        <a href="/" style={{ marginTop: '24px', color: '#3B82F6', fontSize: '13px' }}>← Back to home</a>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif', background: '#0B0F19', color: '#f4f4f5', overflow: 'hidden' }}>
 
@@ -521,6 +741,22 @@ export default function CompilerPage() {
           }}>
             {problem.difficulty}
           </span>
+          <button
+            onClick={handleShare}
+            title="Copy share link"
+            style={{
+              background: 'transparent',
+              border: `1px solid ${copied ? '#1f3a1f' : '#1e1e1e'}`,
+              color: copied ? '#4ade80' : '#71717a',
+              borderRadius: '6px', padding: '4px 9px', fontSize: '11px',
+              fontWeight: '500', cursor: 'pointer', display: 'flex',
+              alignItems: 'center', gap: '5px', transition: 'color 0.15s, border-color 0.15s',
+              flexShrink: 0,
+            }}
+          >
+            <span>📋</span>
+            <span>{copied ? 'Copied!' : 'Share'}</span>
+          </button>
         </div>
 
         {/* Right: language + avatar */}

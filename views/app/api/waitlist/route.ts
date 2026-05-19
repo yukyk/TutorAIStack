@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/db';
+import { validateEmail } from '@/lib/sanitize';
+import { validateOrigin } from '@/lib/csrf';
 
 export async function GET(): Promise<NextResponse> {
   try {
@@ -14,6 +16,15 @@ export async function GET(): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  if (!validateOrigin(request)) {
+    return NextResponse.json({ error: 'Invalid origin' }, { status: 403 });
+  }
+
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > 51200) {
+    return NextResponse.json({ error: 'Request too large' }, { status: 413 });
+  }
+
   let body: { email?: string };
   try {
     body = await request.json();
@@ -23,7 +34,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const { email } = body;
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!email || !validateEmail(email)) {
     return NextResponse.json({ error: 'Valid email is required.' }, { status: 400 });
   }
 

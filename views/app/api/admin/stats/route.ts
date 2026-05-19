@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { counters, getOnlineCount } from '@/lib/counters';
+import { counters, getOnlineCount, getFailedLoginStats } from '@/lib/counters';
 
 // NOTE: counters will always be 0 on Vercel (serverless isolation).
 // See views/lib/counters.ts for full explanation.
@@ -15,6 +15,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     modeEntries[0]
   )[0];
 
+  const loginStats = getFailedLoginStats();
+
   return NextResponse.json({
     pageVisits: counters.pageVisits,
     aiRequests: counters.aiRequests,
@@ -25,5 +27,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     uptime: Math.floor(process.uptime()),
     nodeVersion: process.version,
     env: process.env.NODE_ENV || 'development',
+    security: {
+      lockedAccounts: loginStats.totalLocked,
+      recentFailedAttempts: loginStats.recentAttempts,
+    },
   });
 }
