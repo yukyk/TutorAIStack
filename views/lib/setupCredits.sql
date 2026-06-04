@@ -29,3 +29,7 @@ create table if not exists subscriptions (
 alter table user_credits       disable row level security;
 alter table credit_transactions disable row level security;
 alter table subscriptions       disable row level security;
+
+-- Add current_period_end if upgrading an existing database
+alter table subscriptions
+  add column if not exists current_period_end timestamptz;

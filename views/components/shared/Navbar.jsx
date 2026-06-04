@@ -44,9 +44,9 @@ export default function Navbar() {
         {/* Desktop auth */}
         <div className="hidden md:flex items-center gap-3">
           {session ? (
-            <div className="relative">
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+            <div className="relative flex items-center gap-1">
+              <a
+                href="/profile"
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 <img
@@ -57,9 +57,22 @@ export default function Navbar() {
                 <span className="text-sm text-white/80">
                   {session.user?.name?.split(' ')[0]}
                 </span>
+              </a>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="text-white/30 hover:text-white/70 transition-colors text-xs px-1"
+              >
+                ▾
               </button>
               {dropdownOpen && (
                 <div className="absolute top-full right-0 mt-2 bg-[#0d0d0d] border border-white/10 rounded-xl py-1 min-w-[140px] shadow-xl">
+                  <a
+                    href="/profile"
+                    onClick={() => setDropdownOpen(false)}
+                    className="block px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+                  >
+                    Profile
+                  </a>
                   <button
                     onClick={() => { signOut({ callbackUrl: '/' }); setDropdownOpen(false); }}
                     className="w-full text-left px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
@@ -107,14 +120,14 @@ export default function Navbar() {
         ))}
         {session ? (
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <a href="/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <img
                 src={session.user?.image || '/default-avatar.png'}
                 alt={session.user?.name ?? ''}
                 className="w-8 h-8 rounded-full border border-white/20"
               />
               <span className="text-sm text-white/80">{session.user?.name?.split(' ')[0]}</span>
-            </div>
+            </a>
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
               className="text-sm text-white/40 hover:text-white transition-colors"

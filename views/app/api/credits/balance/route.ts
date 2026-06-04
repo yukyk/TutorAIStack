@@ -12,6 +12,15 @@ export async function GET() {
 
   const credits = await getOrCreateCredits(userId);
 
+  if (!credits) {
+    return NextResponse.json({
+      dailyCredits: 5,
+      dailyLimit: 5,
+      packCredits: 0,
+      resetAt: null,
+    });
+  }
+
   return NextResponse.json({
     dailyCredits: credits.daily_credits,
     dailyLimit: credits.daily_limit,

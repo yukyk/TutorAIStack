@@ -45,6 +45,11 @@ export default function OnboardingPage() {
     const [exiting, setExiting] = useState(false);
     const router = useRouter();
 
+    async function completeOnboarding() {
+        await fetch('/api/user/onboarding', { method: 'PATCH' }).catch(() => {});
+        router.push('/dashboard');
+    }
+
     function next() {
         if (current < STEPS.length - 1) {
             setExiting(true);
@@ -53,12 +58,12 @@ export default function OnboardingPage() {
                 setExiting(false);
             }, 200);
         } else {
-            router.push('/compiler');
+            completeOnboarding();
         }
     }
 
     function skip() {
-        router.push('/compiler');
+        completeOnboarding();
     }
 
     const step = STEPS[current];

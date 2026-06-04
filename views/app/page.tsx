@@ -1,3 +1,6 @@
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import Hero from '@/components/landing/Hero';
 import Features from '@/components/landing/Features';
 import HowItWorks from '@/components/landing/HowItWorks';
@@ -17,7 +20,10 @@ const SocialProof = dynamic(() => import('@/components/landing/SocialProof'), {
   loading: () => <div style={{ height: '300px' }} />,
 });
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await getServerSession(authOptions);
+  if (session) redirect('/dashboard');
+
   return (
     <main className="bg-[#0B0F19] min-h-screen text-white">
       <Navbar />

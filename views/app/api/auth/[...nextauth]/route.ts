@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
 
         const { data: user } = await supabase
           .from('users')
-          .select('id, name, email, password_hash')
+          .select('id, name, email, password_hash, onboarding_complete')
           .eq('email', credentials.email)
           .single();
 
@@ -59,7 +59,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         recordSuccessfulLogin(credentials.email);
-        return { id: String(user.id), email: user.email, name: user.name };
+        return { id: String(user.id), email: user.email, name: user.name, onboardingComplete: user.onboarding_complete ?? null };
       },
     }),
   ],
@@ -73,19 +73,20 @@ export const authOptions: NextAuthOptions = {
         try {
           const { data: existing } = await supabase
             .from('users')
-            .select('id')
+            .select('id, onboarding_complete')
             .eq('email', user.email)
             .single();
 
           if (existing) {
             (user as any).id = String(existing.id);
+            (user as any).onboardingComplete = existing.onboarding_complete ?? null;
           } else {
             const { data: created } = await supabase
               .from('users')
               .insert({ name: user.name, email: user.email, password_hash: null })
               .select('id')
               .single();
-            if (created) (user as any).id = String(created.id);
+            if (created) { (user as any).id = String(created.id); (user as any).onboardingComplete = false; }
           }
         } catch (err) {
           console.error('Google signIn DB error:', err);
@@ -100,6 +101,7 @@ export const authOptions: NextAuthOptions = {
       }
       if (user) {
         token.userId = (user as any).id;
+        token.onboardingComplete = (user as any).onboardingComplete ?? null;
       }
       return token;
     },
@@ -111,6 +113,7 @@ export const authOptions: NextAuthOptions = {
       if (token.userId) {
         (session.user as any).id = token.userId;
       }
+      (session.user as any).onboardingComplete = token.onboardingComplete ?? null;
       return session;
     },
   },

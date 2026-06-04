@@ -247,6 +247,162 @@ const PROBLEM_TESTS: Record<string, ProblemTest> = {
       { args: [[0,0]],           expected: [0,0],        label: 'nums=[0,0]', isEdgeCase: true },
     ],
   },
+  valid_anagram: {
+    func: { py: 'isAnagram', js: 'isAnagram' },
+    cases: [
+      { args: ['anagram', 'nagaram'], expected: true,  label: 's="anagram", t="nagaram"' },
+      { args: ['rat',     'car'],     expected: false, label: 's="rat", t="car"' },
+      { args: ['a',       'a'],       expected: true,  label: 's="a", t="a"', isEdgeCase: true },
+    ],
+  },
+  best_time_to_buy_sell_stock: {
+    func: { py: 'maxProfit', js: 'maxProfit' },
+    cases: [
+      { args: [[7,1,5,3,6,4]], expected: 5, label: 'prices=[7,1,5,3,6,4]' },
+      { args: [[7,6,4,3,1]],   expected: 0, label: 'prices=[7,6,4,3,1]' },
+      { args: [[1]],           expected: 0, label: 'prices=[1]', isEdgeCase: true },
+    ],
+  },
+  missing_number: {
+    func: { py: 'missingNumber', js: 'missingNumber' },
+    cases: [
+      { args: [[3,0,1]],             expected: 2, label: 'nums=[3,0,1]' },
+      { args: [[9,6,4,2,3,5,7,0,1]], expected: 8, label: 'nums=[9,6,4,2,3,5,7,0,1]' },
+      { args: [[0]],                 expected: 1, label: 'nums=[0]', isEdgeCase: true },
+    ],
+  },
+  palindrome_number: {
+    func: { py: 'isPalindrome', js: 'isPalindrome' },
+    cases: [
+      { args: [121],  expected: true,  label: 'x=121' },
+      { args: [-121], expected: false, label: 'x=-121' },
+      { args: [0],    expected: true,  label: 'x=0', isEdgeCase: true },
+    ],
+  },
+  fizz_buzz: {
+    func: { py: 'fizzBuzz', js: 'fizzBuzz' },
+    cases: [
+      { args: [3], expected: ['1','2','Fizz'],             label: 'n=3' },
+      { args: [5], expected: ['1','2','Fizz','4','Buzz'],  label: 'n=5' },
+      { args: [1], expected: ['1'],                        label: 'n=1', isEdgeCase: true },
+    ],
+  },
+  invert_binary_tree: {
+    func: { py: 'invertTree', js: 'invertTree' },
+    cases: [],
+    binaryTree: true,
+  },
+  symmetric_tree: {
+    func: { py: 'isSymmetric', js: 'isSymmetric' },
+    cases: [
+      { args: [[1,2,2,3,4,4,3]],      expected: true,  label: 'root=[1,2,2,3,4,4,3]' },
+      { args: [[1,2,2,null,3,null,3]], expected: false, label: 'root=[1,2,2,null,3,null,3]' },
+      { args: [[1]],                   expected: true,  label: 'root=[1]', isEdgeCase: true },
+    ],
+    binaryTree: true,
+  },
+  path_sum: {
+    func: { py: 'hasPathSum', js: 'hasPathSum' },
+    cases: [
+      { args: [[5,4,8,11,null,13,4,7,2,null,null,null,1], 22], expected: true,  label: 'root=[5,4,8,...], targetSum=22' },
+      { args: [[1,2,3], 5],                                    expected: false, label: 'root=[1,2,3], targetSum=5' },
+      { args: [[], 0],                                         expected: false, label: 'root=[], targetSum=0', isEdgeCase: true },
+    ],
+    binaryTree: true,
+  },
+  merge_two_sorted_lists: {
+    func: { py: 'mergeTwoLists', js: 'mergeTwoLists' },
+    cases: [],
+    linkedList: true,
+  },
+  remove_duplicates_sorted_array: {
+    func: { py: 'removeDuplicates', js: 'removeDuplicates' },
+    cases: [
+      { args: [[1,1,2]],               expected: 2, label: 'nums=[1,1,2]' },
+      { args: [[0,0,1,1,1,2,2,3,3,4]], expected: 5, label: 'nums=[0,0,1,1,1,2,2,3,3,4]' },
+      { args: [[1]],                   expected: 1, label: 'nums=[1]', isEdgeCase: true },
+    ],
+  },
+  move_zeroes: {
+    func: { py: 'moveZeroes', js: 'moveZeroes' },
+    cases: [
+      { args: [[0,1,0,3,12]], expected: [1,3,12,0,0], label: 'nums=[0,1,0,3,12]' },
+      { args: [[0]],          expected: [0],           label: 'nums=[0]' },
+      { args: [[1]],          expected: [1],           label: 'nums=[1]', isEdgeCase: true },
+    ],
+  },
+  three_sum: {
+    func: { py: 'threeSum', js: 'threeSum' },
+    cases: [
+      { args: [[-1,0,1,2,-1,-4]], expected: [[-1,-1,2],[-1,0,1]], label: 'nums=[-1,0,1,2,-1,-4]' },
+      { args: [[0,1,1]],          expected: [],                    label: 'nums=[0,1,1]' },
+      { args: [[0,0,0]],          expected: [[0,0,0]],             label: 'nums=[0,0,0]', isEdgeCase: true },
+    ],
+  },
+  container_with_most_water: {
+    func: { py: 'maxArea', js: 'maxArea' },
+    cases: [
+      { args: [[1,8,6,2,5,4,8,3,7]], expected: 49, label: 'height=[1,8,6,2,5,4,8,3,7]' },
+      { args: [[1,1]],               expected: 1,  label: 'height=[1,1]' },
+      { args: [[4,3,2,1,4]],         expected: 16, label: 'height=[4,3,2,1,4]', isEdgeCase: true },
+    ],
+  },
+  longest_common_subsequence: {
+    func: { py: 'longestCommonSubsequence', js: 'longestCommonSubsequence' },
+    cases: [
+      { args: ['abcde', 'ace'], expected: 3, label: 'text1="abcde", text2="ace"' },
+      { args: ['abc',   'abc'], expected: 3, label: 'text1="abc", text2="abc"' },
+      { args: ['abc',   'def'], expected: 0, label: 'text1="abc", text2="def"', isEdgeCase: true },
+    ],
+  },
+  house_robber: {
+    func: { py: 'rob', js: 'rob' },
+    cases: [
+      { args: [[1,2,3,1]],   expected: 4,  label: 'nums=[1,2,3,1]' },
+      { args: [[2,7,9,3,1]], expected: 12, label: 'nums=[2,7,9,3,1]' },
+      { args: [[1]],         expected: 1,  label: 'nums=[1]', isEdgeCase: true },
+    ],
+  },
+  coin_change: {
+    func: { py: 'coinChange', js: 'coinChange' },
+    cases: [
+      { args: [[1,2,5], 11], expected: 3,  label: 'coins=[1,2,5], amount=11' },
+      { args: [[2],     3],  expected: -1, label: 'coins=[2], amount=3' },
+      { args: [[1],     0],  expected: 0,  label: 'coins=[1], amount=0', isEdgeCase: true },
+    ],
+  },
+  word_search: {
+    func: { py: 'exist', js: 'exist' },
+    cases: [
+      { args: [[['A','B','C','E'],['S','F','C','S'],['A','D','E','E']], 'ABCCED'], expected: true,  label: 'word="ABCCED"' },
+      { args: [[['A','B','C','E'],['S','F','C','S'],['A','D','E','E']], 'SEE'],    expected: true,  label: 'word="SEE"' },
+      { args: [[['A','B','C','E'],['S','F','C','S'],['A','D','E','E']], 'ABCB'],   expected: false, label: 'word="ABCB"', isEdgeCase: true },
+    ],
+  },
+  permutations: {
+    func: { py: 'permute', js: 'permute' },
+    cases: [
+      { args: [[0,1]],   expected: [[0,1],[1,0]],                                        label: 'nums=[0,1]' },
+      { args: [[1,2,3]], expected: [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]],    label: 'nums=[1,2,3]' },
+      { args: [[1]],     expected: [[1]],                                                label: 'nums=[1]', isEdgeCase: true },
+    ],
+  },
+  rotate_image: {
+    func: { py: 'rotate', js: 'rotate' },
+    cases: [
+      { args: [[[1,2,3],[4,5,6],[7,8,9]]],                            expected: [[7,4,1],[8,5,2],[9,6,3]],                       label: '3x3 matrix' },
+      { args: [[[5,1,9,11],[2,4,8,10],[13,3,6,7],[15,14,12,16]]],     expected: [[15,13,2,5],[14,3,4,1],[12,6,8,9],[16,7,10,11]], label: '4x4 matrix' },
+      { args: [[[1]]],                                                expected: [[1]],                                            label: 'matrix=[[1]]', isEdgeCase: true },
+    ],
+  },
+  spiral_matrix: {
+    func: { py: 'spiralOrder', js: 'spiralOrder' },
+    cases: [
+      { args: [[[1,2,3],[4,5,6],[7,8,9]]],             expected: [1,2,3,6,9,8,7,4,5],           label: '3x3 matrix' },
+      { args: [[[1,2,3,4],[5,6,7,8],[9,10,11,12]]],    expected: [1,2,3,4,8,12,11,10,9,5,6,7],  label: '3x4 matrix' },
+      { args: [[[1]]],                                 expected: [1],                            label: 'matrix=[[1]]', isEdgeCase: true },
+    ],
+  },
 };
 
 function buildPythonHarness(
