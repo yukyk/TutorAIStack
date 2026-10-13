@@ -23,6 +23,15 @@ jobs:
       - run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          SUPABASE_SERVICE_ROLE_KEY: dummy
+          SUPABASE_SERVICE_KEY: dummy
           NEXTAUTH_SECRET: dummy
           NEXTAUTH_URL: http://localhost:3000
+          GOOGLE_CLIENT_ID: dummy
+          GOOGLE_CLIENT_SECRET: dummy
+          GROQ_API_KEY: dummy
+          RAZORPAY_KEY_ID: dummy
+          RAZORPAY_KEY_SECRET: dummy
+          RAZORPAY_WEBHOOK_SECRET: dummy
+          NEXT_PUBLIC_RAZORPAY_KEY_ID: dummy
+          ADMIN_EMAIL: admin@example.com
+          ADMIN_PASSWORD: dummy
