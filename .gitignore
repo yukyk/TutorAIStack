@@ -45,3 +45,9 @@ next-env.d.ts
 
 views/.next/
 views/node_modules/
+!.env.example
+.claude/
+*.canvas
+*.base
+Untitled*
+2026-*.md
