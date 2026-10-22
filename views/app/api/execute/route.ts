@@ -547,7 +547,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const response = await axios.post(JUDGE0_URL, {
       source_code: b64e(runCode),
       language_id: langId,
-    }, { headers: { 'Content-Type': 'application/json' }, timeout: 20000 });
+    }, { headers: { 'Content-Type': 'application/json' }, timeout: 60000 });
 
     incrementExecute();
     const data = response.data;
@@ -575,7 +575,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ type: 'raw', stdout, stderr });
   } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const downstreamStatus = err.response?.status;
+      const timedOut = err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT';
+
+      console.error('Execute error:', err.message);
+      if (timedOut) {
+        return NextResponse.json({ error: 'Code execution timed out. Reduce the workload and try again.' }, { status: 504 });
+      }
+      if (downstreamStatus && downstreamStatus >= 400 && downstreamStatus < 500) {
+        return NextResponse.json({ error: 'The execution sandbox rejected the request.' }, { status: 502 });
+      }
+      if (downstreamStatus && downstreamStatus >= 500) {
+        return NextResponse.json({ error: 'The execution sandbox is temporarily unavailable. Try again in a moment.' }, { status: 503 });
+      }
+      return NextResponse.json({ error: 'Could not reach the execution sandbox. Try again in a moment.' }, { status: 503 });
+    }
+
     console.error('Execute error:', (err as Error).message);
-    return NextResponse.json({ error: 'Code execution unavailable. Try again in a moment.' }, { status: 503 });
+    return NextResponse.json({ error: 'Unexpected code execution service error.' }, { status: 502 });
   }
 }
